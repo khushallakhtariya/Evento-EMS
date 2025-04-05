@@ -16,10 +16,45 @@ button.secondary{
   @apply flex items-center gap-2 text-primary py-2 px-4 bg-primarylight cursor-pointer ring-1 font-bold ring-primarylight rounded  hover:bg-primarydark hover:shadow-lg duration-75 hover:ring-primarydark hover:text-white;
 }
 div.input{
-  @apply flex bg-background rounded w-full py-2.5 px-4 gap-4 items-center ;
+  @apply flex bg-background rounded w-full py-2.5 px-4 gap-4 items-center shadow-sm border border-transparent focus-within:border-primary transition-all;
 }
 input.input-et{
   @apply text-base bg-inherit text-black outline-none w-full;
+}
+
+/* Enhanced form elements */
+.auth-form {
+  @apply transition-all duration-300;
+}
+
+.auth-form:focus-within {
+  @apply shadow-md;
+}
+
+/* Loading spinner */
+.spinner-border {
+  @apply animate-spin inline-block w-5 h-5 border-2 border-t-transparent rounded-full;
+}
+
+/* Toast customization */
+.Toastify__toast {
+  @apply font-sans rounded-lg shadow-md;
+}
+
+.Toastify__toast--success {
+  @apply bg-green-50 border-l-4 border-green-500 text-green-800;
+}
+
+.Toastify__toast--error {
+  @apply bg-red-50 border-l-4 border-red-500 text-red-800;
+}
+
+.Toastify__toast--warning {
+  @apply bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800;
+}
+
+.Toastify__toast-body {
+  @apply font-medium;
 }
 
 .custom-list {
@@ -40,4 +75,23 @@ input.input-et{
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Login and Register specific styles */
+.container2 {
+  @apply bg-gray-100 rounded-md overflow-hidden transition-all duration-300;
+}
+
+.container2:hover {
+  @apply shadow-md;
+}
+
+/* Animation keyframes */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out forwards;
 }

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Round Favicon</title>
+    <style>
+      canvas {
+        border-radius: 50%;
+        background-color: #4a90e2; /* You can change this to match your brand color */
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="favicon" width="32" height="32"></canvas>
+    <script>
+      // Draw a circular favicon
+      const canvas = document.getElementById("favicon");
+      const ctx = canvas.getContext("2d");
+
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw circle
+      ctx.beginPath();
+      ctx.arc(16, 16, 16, 0, Math.PI * 2);
+      ctx.fillStyle = "#4a90e2"; // Background color
+      ctx.fill();
+
+      // Add text or logo if needed
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 18px Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("E", 16, 16);
+
+      // Convert to image
+      const dataUrl = canvas.toDataURL("image/png");
+
+      // Display the image URL for downloading
+      const img = document.createElement("img");
+      img.src = dataUrl;
+      document.body.appendChild(img);
+
+      const link = document.createElement("a");
+      link.href = dataUrl;
+      link.download = "round-favicon.png";
+      link.textContent = "Download Round Favicon";
+      document.body.appendChild(link);
+    </script>
+  </body>
+</html>

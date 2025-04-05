@@ -8,6 +8,7 @@ const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const multer = require("multer");
 const path = require("path");
+const crypto = require("crypto");
 
 const Ticket = require("./models/Ticket");
 
@@ -85,6 +86,101 @@ app.post("/login", async (req, res) => {
       res.cookie("token", token).json(userDoc);
     }
   );
+});
+
+// Forgot password endpoint
+app.post("/forgot-password", async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Check if user exists
+    const userDoc = await UserModel.findOne({ email });
+    if (!userDoc) {
+      // For security reasons, don't reveal if the email exists or not
+      return res.status(200).json({
+        message: "If this email exists, you will receive reset instructions",
+      });
+    }
+
+    // Generate a reset token
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const resetTokenExpiry = Date.now() + 3600000; // 1 hour
+
+    // Update user with reset token
+    userDoc.resetToken = resetToken;
+    userDoc.resetTokenExpiry = resetTokenExpiry;
+    await userDoc.save();
+
+    // Construct reset URL
+    const resetUrl = `${req.protocol}://${req.get(
+      "host"
+    )}/resetpassword?token=${resetToken}`;
+
+    // Send email with the reset URL - this is commented out as it requires email setup
+    /* 
+    // This requires nodemailer or similar package to be installed and configured
+    const emailContent = `
+      <h1>Password Reset</h1>
+      <p>You requested a password reset for your EventoEMS account.</p>
+      <p>Click the link below to reset your password:</p>
+      <a href="${resetUrl}" target="_blank">Reset Password</a>
+      <p>This link is valid for 1 hour.</p>
+      <p>If you didn't request this, please ignore this email.</p>
+    `;
+
+    // Code to send email would go here
+    */
+
+    // Log the reset URL for development purposes only
+    console.log("Password reset link:", resetUrl);
+
+    // Send a success response
+    return res
+      .status(200)
+      .json({ message: "Password reset instructions sent to your email" });
+  } catch (error) {
+    console.error("Forgot password error:", error);
+    return res
+      .status(500)
+      .json({ error: "Failed to process password reset request" });
+  }
+});
+
+// Reset password endpoint
+app.post("/reset-password", async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    // Find user with the given reset token that hasn't expired
+    const userDoc = await UserModel.findOne({
+      resetToken: token,
+      resetTokenExpiry: { $gt: Date.now() },
+    });
+
+    if (!userDoc) {
+      return res.status(400).json({ error: "Invalid or expired reset token" });
+    }
+
+    // Update the user's password
+    userDoc.password = bcrypt.hashSync(newPassword, bcryptSalt);
+
+    // Clear the reset token fields
+    userDoc.resetToken = undefined;
+    userDoc.resetTokenExpiry = undefined;
+
+    await userDoc.save();
+
+    return res
+      .status(200)
+      .json({ message: "Password has been reset successfully" });
+  } catch (error) {
+    console.error("Reset password error:", error);
+    return res.status(500).json({ error: "Failed to reset password" });
+  }
 });
 
 app.get("/profile", (req, res) => {

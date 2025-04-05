@@ -9,9 +9,10 @@ const UserSchema = new Schema({
     type: String,
     default: "user",
   },
+  resetToken: String,
+  resetTokenExpiry: Date,
 });
 
 const UserModel = mongoose.model("User", UserSchema);
 
 module.exports = UserModel;
-  
