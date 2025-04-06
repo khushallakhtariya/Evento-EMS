@@ -98,13 +98,13 @@ export default function LoginPage() {
   return (
     <>
       <ToastContainer />
-      <div className="flex w-full h-screen lg:ml-24 px-10 py-10 justify-between place-items-center">
-        <div className="bg-white w-full sm:w-full md:w-1/2 lg:w-1/3 px-8 py-8 rounded-xl shadow-lg">
+      <div className="flex w-full h-screen lg:ml-24 px-10 py-10 justify-between place-items-center dark:bg-gray-900">
+        <div className="bg-white w-full sm:w-full md:w-1/2 lg:w-1/3 px-8 py-8 rounded-xl shadow-lg dark:bg-gray-800 dark:text-white">
           <form
             className="flex flex-col w-auto items-center"
             onSubmit={loginUser}
           >
-            <h1 className="px-3 font-extrabold mb-6 text-primarydark text-3xl">
+            <h1 className="px-3 font-extrabold mb-6 text-primarydark text-3xl dark:text-white">
               Sign In
             </h1>
 
@@ -189,7 +189,7 @@ export default function LoginPage() {
             </div>
 
             <div className="flex w-full h-full mt-2 mb-6 justify-between px-1">
-              <div className="flex gap-2 items-center text-gray-700 hover:text-primary transition-colors">
+              <div className="flex gap-2 items-center text-gray-700 hover:text-primary transition-colors dark:text-gray-300">
                 <input
                   type="checkbox"
                   id="rememberMe"
@@ -245,14 +245,13 @@ export default function LoginPage() {
               )}
             </button>
 
-            <div className="container2 mt-6 mb-6 overflow-hidden">
+            <div className="container2 mt-6 mb-6 overflow-hidden flex rounded-lg border border-gray-200 shadow-sm dark:border-gray-700 dark:bg-gray-800">
               <div className="w-full h-full p-1">
                 <Link to={"/login"}>
                   <button
                     type="button"
-                    className="text-white cursor-pointer rounded w-full h-full bg-primary font-bold py-2"
+                    className="transition-all w-full h-full py-2 rounded bg-primary text-white font-bold shadow-md hover:shadow-lg hover:bg-primarydark dark:bg-primary dark:text-white dark:hover:opacity-90"
                   >
-                    {" "}
                     Sign In
                   </button>
                 </Link>
@@ -261,9 +260,8 @@ export default function LoginPage() {
                 <Link to={"/register"}>
                   <button
                     type="button"
-                    className="text-black cursor-pointer rounded w-full h-full font-bold py-2 hover:text-primary transition-colors"
+                    className="transition-all w-full h-full py-2 rounded font-bold bg-gray-100 hover:bg-gray-200 text-gray-800 hover:text-primary shadow-md hover:shadow-lg dark:bg-gray-700 dark:text-gray-200 dark:hover:text-primary dark:hover:bg-gray-600"
                   >
-                    {" "}
                     Sign Up
                   </button>
                 </Link>
@@ -271,7 +269,10 @@ export default function LoginPage() {
             </div>
 
             <Link to={"/"} className="mt-2">
-              <button type="button" className="secondary">
+              <button
+                type="button"
+                className="secondary dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"

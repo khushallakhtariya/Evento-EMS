@@ -337,16 +337,16 @@ export default function PaymentSummary() {
   // Helper function to get input style based on error state
   const getInputStyle = (fieldName) => {
     return errors[fieldName]
-      ? "w-full h-12 bg-gray-50 border border-red-500 rounded-lg px-4 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
-      : "w-full h-12 bg-gray-50 border border-gray-300 rounded-lg px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm hover:border-blue-300 transition-all duration-200";
+      ? "w-full h-12 bg-gray-50 dark:bg-gray-800 border border-red-500 rounded-lg px-4 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
+      : "w-full h-12 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-200 dark:text-gray-200";
   };
 
   return (
-    <div className="bg-gradient-to-br from-gray-50 to-blue-50 min-h-screen pb-12">
+    <div className="bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 min-h-screen pb-12">
       <ToastContainer />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         <Link to={"/event/" + event._id + "/ordersummary"}>
-          <button className="flex items-center gap-2 px-4 py-2 bg-white shadow rounded-lg text-blue-600 font-medium hover:bg-blue-50 transition-colors duration-200">
+          <button className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 shadow rounded-lg text-blue-600 dark:text-blue-400 font-medium hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200">
             <IoMdArrowBack className="w-5 h-5" />
             Back
           </button>
@@ -355,14 +355,14 @@ export default function PaymentSummary() {
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main payment form */}
           <div className="lg:col-span-2">
-            <div className="bg-white shadow-lg rounded-xl p-8 border border-gray-100">
+            <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl p-8 border border-gray-100 dark:border-gray-700">
               {showQrConfirmation ? (
                 // QR Code Confirmation View
                 <div className="flex flex-col items-center">
-                  <h2 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-3 w-full text-center">
+                  <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100 border-b dark:border-gray-700 pb-3 w-full text-center">
                     Your Event QR Code
                   </h2>
-                  <div className="mb-6 p-2 bg-white rounded-xl shadow-md border border-gray-200">
+                  <div className="mb-6 p-2 bg-white dark:bg-gray-700 rounded-xl shadow-md border border-gray-200 dark:border-gray-600">
                     {qrCode && (
                       <img
                         src={qrCode}
@@ -372,11 +372,11 @@ export default function PaymentSummary() {
                     )}
                   </div>
                   <div className="mb-8 text-center">
-                    <h3 className="text-xl font-semibold mb-2 text-gray-800">
+                    <h3 className="text-xl font-semibold mb-2 text-gray-800 dark:text-gray-100">
                       {event.title}
                     </h3>
-                    <div className="p-4 bg-blue-50 rounded-lg shadow-sm border border-blue-100 mb-4">
-                      <p className="text-gray-700">
+                    <div className="p-4 bg-blue-50 dark:bg-blue-900 rounded-lg shadow-sm border border-blue-100 dark:border-blue-800 mb-4">
+                      <p className="text-gray-700 dark:text-gray-300">
                         <span className="font-medium">Name:</span>{" "}
                         {details.name}
                         <br />
@@ -387,7 +387,7 @@ export default function PaymentSummary() {
                         {details.contactNo}
                       </p>
                     </div>
-                    <p className="mt-4 text-gray-700 bg-yellow-50 p-4 rounded-lg border border-yellow-100">
+                    <p className="mt-4 text-gray-700 dark:text-gray-300 bg-yellow-50 dark:bg-yellow-900 p-4 rounded-lg border border-yellow-100 dark:border-yellow-800">
                       This QR code will be stored in your wallet after
                       successful payment. Please present this at the event for
                       entry.
@@ -397,13 +397,13 @@ export default function PaymentSummary() {
                     <button
                       type="button"
                       onClick={handleBackToPayment}
-                      className="px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200 shadow-sm"
+                      className="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 dark:focus:ring-gray-800 transition-colors duration-200 shadow-sm"
                     >
                       Back to Details
                     </button>
                     <button
                       type="button"
-                      className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 shadow-sm"
+                      className="px-6 py-3 bg-blue-600 dark:bg-blue-700 text-white font-medium rounded-lg hover:bg-blue-700 dark:hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-colors duration-200 shadow-sm"
                       onClick={() =>
                         document
                           .getElementById("payment-section")
@@ -415,7 +415,7 @@ export default function PaymentSummary() {
                   </div>
 
                   <div id="payment-section" className="mt-12 w-full">
-                    <h2 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-3">
+                    <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100 border-b dark:border-gray-700 pb-3">
                       Payment Option
                     </h2>
                     <div className="mb-6">
@@ -423,7 +423,7 @@ export default function PaymentSummary() {
                         name="paymentMethod"
                         value={payment.paymentMethod}
                         onChange={handleChangePayment}
-                        className="w-full md:w-60 h-12 px-4 bg-white border border-gray-300 rounded-lg text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm cursor-pointer"
+                        className="w-full md:w-60 h-12 px-4 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-800 focus:border-transparent shadow-sm cursor-pointer"
                       >
                         <option value="credit">Credit Card</option>
                         <option value="debit">Debit Card</option>
@@ -433,13 +433,13 @@ export default function PaymentSummary() {
                     </div>
 
                     {/* Payment methods */}
-                    <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-sm">
+                    <div className="bg-gray-50 dark:bg-gray-700 p-6 rounded-xl border border-gray-200 dark:border-gray-600 shadow-sm">
                       {(payment.paymentMethod === "credit" ||
                         payment.paymentMethod === "debit") && (
                         <div className="space-y-5">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 Name on Card
                               </label>
                               <input
@@ -454,13 +454,13 @@ export default function PaymentSummary() {
                                 className={getInputStyle("nameOnCard")}
                               />
                               {errors.nameOnCard && (
-                                <p className="mt-1 text-sm text-red-500">
+                                <p className="mt-1 text-sm text-red-500 dark:text-red-400">
                                   Name on card is required
                                 </p>
                               )}
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 Card Number
                               </label>
                               <input
@@ -477,7 +477,7 @@ export default function PaymentSummary() {
                                 maxLength="13"
                               />
                               {errors.cardNumber && (
-                                <p className="mt-1 text-sm text-red-500">
+                                <p className="mt-1 text-sm text-red-500 dark:text-red-400">
                                   Card number is required
                                 </p>
                               )}
@@ -485,7 +485,7 @@ export default function PaymentSummary() {
                           </div>
                           <div className="grid grid-cols-3 gap-5">
                             <div className="col-span-2">
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 Expiry Date
                               </label>
                               <input
@@ -500,13 +500,13 @@ export default function PaymentSummary() {
                                 maxLength="5"
                               />
                               {errors.expiryDate && (
-                                <p className="mt-1 text-sm text-red-500">
+                                <p className="mt-1 text-sm text-red-500 dark:text-red-400">
                                   Expiry date is required
                                 </p>
                               )}
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 CVV
                               </label>
                               <input
@@ -526,7 +526,7 @@ export default function PaymentSummary() {
                                 maxLength="3"
                               />
                               {errors.cvv && (
-                                <p className="mt-1 text-sm text-red-500">
+                                <p className="mt-1 text-sm text-red-500 dark:text-red-400">
                                   CVV is required
                                 </p>
                               )}
@@ -539,7 +539,7 @@ export default function PaymentSummary() {
                         <div className="space-y-5">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 Bank Name
                               </label>
                               <input
@@ -551,11 +551,11 @@ export default function PaymentSummary() {
                                   handleKeyDown(e, "accountNumber")
                                 }
                                 placeholder="Bank Name"
-                                className="w-full h-12 bg-gray-50 border border-gray-300 rounded-lg px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm hover:border-blue-300 transition-all duration-200"
+                                className="w-full h-12 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-800 focus:border-transparent shadow-sm hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-200"
                               />
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 Account Number
                               </label>
                               <input
@@ -565,12 +565,12 @@ export default function PaymentSummary() {
                                 onChange={handleChangePayment}
                                 onKeyDown={(e) => handleKeyDown(e, "ifscCode")}
                                 placeholder="Account Number"
-                                className="w-full h-12 bg-gray-50 border border-gray-300 rounded-lg px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm hover:border-blue-300 transition-all duration-200"
+                                className="w-full h-12 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-800 focus:border-transparent shadow-sm hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-200"
                               />
                             </div>
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                               IFSC Code
                             </label>
                             <input
@@ -585,7 +585,7 @@ export default function PaymentSummary() {
                                 }
                               }}
                               placeholder="IFSC Code"
-                              className="w-full h-12 bg-gray-50 border border-gray-300 rounded-lg px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm hover:border-blue-300 transition-all duration-200"
+                              className="w-full h-12 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-800 focus:border-transparent shadow-sm hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-200"
                             />
                           </div>
                         </div>
@@ -594,7 +594,7 @@ export default function PaymentSummary() {
                       {payment.paymentMethod === "upi" && (
                         <div className="space-y-4">
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                               UPI ID
                             </label>
                             <input
@@ -609,14 +609,14 @@ export default function PaymentSummary() {
                                 }
                               }}
                               placeholder="Enter UPI ID (example@bank)"
-                              className="w-full h-12 bg-gray-50 border border-gray-300 rounded-lg px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm hover:border-blue-300 transition-all duration-200"
+                              className="w-full h-12 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-800 focus:border-transparent shadow-sm hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-200"
                             />
                           </div>
                           <div className="mt-4">
                             <button
                               type="button"
                               onClick={handleUpiPayment}
-                              className="w-full py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200 shadow-sm"
+                              className="w-full py-3 bg-green-600 dark:bg-green-700 text-white font-medium rounded-lg hover:bg-green-700 dark:hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-offset-gray-800 transition-colors duration-200 shadow-sm"
                             >
                               Pay with UPI (MRP {event.ticketPrice})
                             </button>
@@ -627,9 +627,9 @@ export default function PaymentSummary() {
 
                     <div className="mt-8 text-right">
                       <div className="inline-flex flex-col items-end">
-                        <p className="text-base font-semibold mb-3 text-gray-700 bg-blue-50 px-4 py-2 rounded-lg border border-blue-100">
+                        <p className="text-base font-semibold mb-3 text-gray-700 dark:text-gray-300 bg-blue-50 dark:bg-blue-900 px-4 py-2 rounded-lg border border-blue-100 dark:border-blue-800">
                           Total :{" "}
-                          <span className="text-blue-700">
+                          <span className="text-blue-700 dark:text-blue-400">
                             MRP {event.ticketPrice}
                           </span>
                         </p>
@@ -637,7 +637,7 @@ export default function PaymentSummary() {
                           <button
                             type="button"
                             onClick={createTicket}
-                            className="inline-flex justify-center items-center px-8 py-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 shadow-md"
+                            className="inline-flex justify-center items-center px-8 py-4 bg-blue-600 dark:bg-blue-700 text-white font-medium rounded-lg hover:bg-blue-700 dark:hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-colors duration-200 shadow-md"
                           >
                             Make Payment
                           </button>
@@ -651,12 +651,12 @@ export default function PaymentSummary() {
                 <>
                   {/* Your Details */}
                   <div className="mb-8">
-                    <h2 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-3">
+                    <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100 border-b dark:border-gray-700 pb-3">
                       Your Details
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                           Name
                         </label>
                         <input
@@ -669,13 +669,13 @@ export default function PaymentSummary() {
                           className={getInputStyle("name")}
                         />
                         {errors.name && (
-                          <p className="mt-1 text-sm text-red-500">
+                          <p className="mt-1 text-sm text-red-500 dark:text-red-400">
                             Name is required
                           </p>
                         )}
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                           Email
                         </label>
                         <input
@@ -688,13 +688,13 @@ export default function PaymentSummary() {
                           className={getInputStyle("email")}
                         />
                         {errors.email && (
-                          <p className="mt-1 text-sm text-red-500">
+                          <p className="mt-1 text-sm text-red-500 dark:text-red-400">
                             Email is required
                           </p>
                         )}
                       </div>
                       <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                           Contact Number
                         </label>
                         <input
@@ -714,7 +714,7 @@ export default function PaymentSummary() {
                           maxLength="10"
                         />
                         {errors.contactNo && (
-                          <p className="mt-1 text-sm text-red-500">
+                          <p className="mt-1 text-sm text-red-500 dark:text-red-400">
                             {details.contactNo
                               ? "Contact number must be 10 digits"
                               : "Contact number is required"}
@@ -726,7 +726,7 @@ export default function PaymentSummary() {
                       <button
                         type="button"
                         onClick={handleShowQrCode}
-                        className="inline-flex justify-center items-center px-8 py-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 shadow-md"
+                        className="inline-flex justify-center items-center px-8 py-4 bg-blue-600 dark:bg-blue-700 text-white font-medium rounded-lg hover:bg-blue-700 dark:hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-colors duration-200 shadow-md"
                       >
                         Continue to QR Preview
                       </button>
@@ -739,21 +739,23 @@ export default function PaymentSummary() {
 
           {/* Order Summary Card */}
           <div className="lg:col-span-1">
-            <div className="bg-white shadow-lg rounded-xl p-6 border border-gray-100 sticky top-6">
-              <h2 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-3">
+            <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl p-6 border border-gray-100 dark:border-gray-700 sticky top-6">
+              <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100 border-b dark:border-gray-700 pb-3">
                 Order Summary
               </h2>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600 font-medium">Quantity</span>
-                  <span className="font-medium bg-blue-100 px-3 py-1 rounded-full text-blue-800">
+                  <span className="text-gray-600 dark:text-gray-400 font-medium">
+                    Quantity
+                  </span>
+                  <span className="font-medium bg-blue-100 dark:bg-blue-900 px-3 py-1 rounded-full text-blue-800 dark:text-blue-200">
                     1 Ticket
                   </span>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-800 mt-2">
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mt-2">
                   {event.title}
                 </h3>
-                <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                <div className="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
                   <p className="flex items-center gap-2">
                     <span className="inline-block w-4 h-4 bg-blue-500 rounded-full"></span>
                     {event.eventDate.split("T")[0]}
@@ -763,14 +765,16 @@ export default function PaymentSummary() {
                     {event.eventTime}
                   </p>
                 </div>
-                <hr className="my-4 border-gray-200" />
-                <div className="flex justify-between items-center text-gray-800 py-2">
+                <hr className="my-4 border-gray-200 dark:border-gray-700" />
+                <div className="flex justify-between items-center text-gray-800 dark:text-gray-200 py-2">
                   <span className="font-medium">Sub total:</span>
                   <span className="font-bold">MRP {event.ticketPrice}</span>
                 </div>
-                <div className="flex justify-between items-center text-gray-800 font-bold bg-blue-50 p-3 rounded-lg">
+                <div className="flex justify-between items-center text-gray-800 dark:text-gray-200 font-bold bg-blue-50 dark:bg-blue-900/30 p-3 rounded-lg">
                   <span>Total:</span>
-                  <span className="text-blue-700">MRP {event.ticketPrice}</span>
+                  <span className="text-blue-700 dark:text-blue-400">
+                    MRP {event.ticketPrice}
+                  </span>
                 </div>
               </div>
             </div>

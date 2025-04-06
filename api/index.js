@@ -349,6 +349,51 @@ app.delete("/tickets/:id", async (req, res) => {
   }
 });
 
+// Event invitation endpoint
+app.post("/event/:id/invite", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { email, message } = req.body;
+
+    // Validate input
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    // Find the event
+    const event = await Event.findById(id);
+    if (!event) {
+      return res.status(404).json({ error: "Event not found" });
+    }
+
+    // In a production environment, you would send an email here
+    // For now, we'll just log the invitation details
+    console.log(`Invitation for event ${event.title} sent to ${email}`);
+    console.log(`Message: ${message || "No custom message provided"}`);
+    console.log(
+      `Event date: ${event.eventDate.toLocaleDateString()}, Time: ${
+        event.eventTime
+      }`
+    );
+    console.log(`Event link: ${req.get("origin")}/event/${id}`);
+
+    // Return success
+    res.status(200).json({
+      message: "Invitation sent successfully",
+      // Include details for frontend confirmation
+      details: {
+        eventName: event.title,
+        sentTo: email,
+        eventDate: event.eventDate,
+        eventTime: event.eventTime,
+      },
+    });
+  } catch (error) {
+    console.error("Error sending invitation:", error);
+    res.status(500).json({ error: "Failed to send invitation" });
+  }
+});
+
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

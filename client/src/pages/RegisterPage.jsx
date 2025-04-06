@@ -1,6 +1,6 @@
 /* eslint-disable no-empty */
 import { Link, Navigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -12,6 +12,20 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [redirect, setRedirect] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // References for input fields
+  const nameRef = useRef(null);
+  const emailRef = useRef(null);
+  const passwordRef = useRef(null);
+  const confirmPasswordRef = useRef(null);
+
+  // Handle Enter key press to focus next input
+  const handleKeyDown = (e, nextRef) => {
+    if (e.key === "Enter" && nextRef) {
+      e.preventDefault();
+      nextRef.current.focus();
+    }
+  };
 
   useEffect(() => {
     // Add the no-scroll class to the body when component mounts
@@ -80,7 +94,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex w-full min-h-screen lg:-ml-24 px-6 py-10 justify-between place-items-center register-container">
+    <div className="flex w-full min-h-screen lg:-ml-24 px-6 py-10 justify-between place-items-center register-container dark:bg-gray-900">
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -96,7 +110,9 @@ export default function RegisterPage() {
 
       <div className="hidden lg:flex flex-col right-box">
         <div className="flex flex-col gap-3">
-          <div className="text-3xl font-black text-primarydark">Welcome to</div>
+          <div className="text-3xl font-black text-primarydark dark:text-primary">
+            Welcome to
+          </div>
           <div>
             <img src="../src/assets/logo.png" alt="" className="w-48" />
           </div>
@@ -107,16 +123,16 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      <div className="bg-white w-full sm:w-full md:w-1/2 lg:w-1/3 px-7 py-8 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
+      <div className="bg-white dark:bg-gray-800 w-full sm:w-full md:w-1/2 lg:w-1/3 px-7 py-8 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
         <form
           className="flex flex-col w-auto items-center"
           onSubmit={registerUser}
         >
-          <h1 className="px-3 font-extrabold mb-6 text-primarydark text-2xl">
+          <h1 className="px-3 font-extrabold mb-6 text-primarydark dark:text-primary text-2xl">
             Sign Up
           </h1>
 
-          <div className="input mb-4 transition-all duration-300 hover:ring-1 hover:ring-primary focus-within:ring-2 focus-within:ring-primary">
+          <div className="input mb-4 transition-all duration-300 hover:ring-1 hover:ring-primary focus-within:ring-2 focus-within:ring-primary dark:bg-gray-700 dark:text-white">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -132,13 +148,15 @@ export default function RegisterPage() {
             <input
               type="text"
               placeholder="Name"
-              className="input-et"
+              className="input-et dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
               value={name}
               onChange={(ev) => setName(ev.target.value)}
+              ref={nameRef}
+              onKeyDown={(e) => handleKeyDown(e, emailRef)}
             />
           </div>
 
-          <div className="input mb-4 transition-all duration-300 hover:ring-1 hover:ring-primary focus-within:ring-2 focus-within:ring-primary">
+          <div className="input mb-4 transition-all duration-300 hover:ring-1 hover:ring-primary focus-within:ring-2 focus-within:ring-primary dark:bg-gray-700 dark:text-white">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -154,13 +172,15 @@ export default function RegisterPage() {
             <input
               type="email"
               placeholder="Email"
-              className="input-et"
+              className="input-et dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
               value={email}
               onChange={(ev) => setEmail(ev.target.value)}
+              ref={emailRef}
+              onKeyDown={(e) => handleKeyDown(e, passwordRef)}
             />
           </div>
 
-          <div className="input mb-4 transition-all duration-300 hover:ring-1 hover:ring-primary focus-within:ring-2 focus-within:ring-primary">
+          <div className="input mb-4 transition-all duration-300 hover:ring-1 hover:ring-primary focus-within:ring-2 focus-within:ring-primary dark:bg-gray-700 dark:text-white">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -176,13 +196,15 @@ export default function RegisterPage() {
             <input
               type="password"
               placeholder="Password"
-              className="input-et"
+              className="input-et dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
               value={password}
               onChange={(ev) => setPassword(ev.target.value)}
+              ref={passwordRef}
+              onKeyDown={(e) => handleKeyDown(e, confirmPasswordRef)}
             />
           </div>
 
-          <div className="input mb-5 transition-all duration-300 hover:ring-1 hover:ring-primary focus-within:ring-2 focus-within:ring-primary">
+          <div className="input mb-5 transition-all duration-300 hover:ring-1 hover:ring-primary focus-within:ring-2 focus-within:ring-primary dark:bg-gray-700 dark:text-white">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -198,9 +220,16 @@ export default function RegisterPage() {
             <input
               type="password"
               placeholder="Confirm password"
-              className="input-et"
+              className="input-et dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
               value={confirmPassword}
               onChange={(ev) => setConfirmPassword(ev.target.value)}
+              ref={confirmPasswordRef}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  registerUser(e);
+                }
+              }}
             />
           </div>
 
@@ -236,14 +265,13 @@ export default function RegisterPage() {
             </button>
           </div>
 
-          <div className="container2 bg-gray-100 p-1 rounded-lg shadow-sm my-5">
+          <div className="container2 bg-white dark:bg-gray-800 p-1 rounded-lg shadow-sm my-5 flex overflow-hidden transition-colors duration-300">
             <div className="w-full h-full p-1">
               <Link to={"/login"}>
                 <button
                   type="button"
-                  className="text-black cursor-pointer rounded w-full h-full font-bold transition-colors hover:text-primarydark"
+                  className="text-gray-700 dark:text-gray-300 cursor-pointer rounded w-full h-full font-bold transition-colors hover:text-primarydark dark:hover:text-primary"
                 >
-                  {" "}
                   Sign In
                 </button>
               </Link>
@@ -252,9 +280,8 @@ export default function RegisterPage() {
               <Link to={"/register"}>
                 <button
                   type="button"
-                  className="text-white cursor-pointer rounded w-full h-full bg-primary font-bold transition-transform hover:scale-105"
+                  className="text-white cursor-pointer rounded w-full h-full bg-primary dark:bg-primary font-bold transition-transform hover:scale-105"
                 >
-                  {" "}
                   Sign Up
                 </button>
               </Link>
@@ -262,7 +289,7 @@ export default function RegisterPage() {
           </div>
 
           <Link to={"/"} className="mt-3">
-            <button className="secondary transition-transform hover:scale-105">
+            <button className="secondary transition-transform hover:scale-105 dark:bg-gray-700 dark:text-white">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"

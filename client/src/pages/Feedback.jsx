@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import FeedbackList from "./FeedbackList"; // Import the new component
 import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
+import { ThemeContext } from "../ThemeContext"; // Import ThemeContext
 
 const Feedback = () => {
   const navigate = useNavigate(); // Initialize navigate for routing
+  const { darkMode, toggleDarkMode } = useContext(ThemeContext); // Get darkMode and toggleDarkMode from context
   // Predefined list of past and present events
   const eventOptions = [
     { id: 1, name: "Annual Tech Conference 2023", status: "past" },
@@ -14,6 +16,13 @@ const Feedback = () => {
     { id: 6, name: "Design Thinking Seminar", status: "past" },
     { id: 7, name: "AI & ML Conference", status: "present" },
     { id: 8, name: "Hackathon Challenge", status: "present" },
+    { id: 9, name: "Digital Marketing Summit", status: "present" },
+    { id: 10, name: "Blockchain Technology Expo", status: "past" },
+    { id: 11, name: "Mobile App Development Workshop", status: "present" },
+    { id: 12, name: "Virtual Reality Gaming Convention", status: "present" },
+    { id: 13, name: "Data Science Symposium", status: "past" },
+    { id: 14, name: "Cybersecurity Forum", status: "present" },
+    { id: 15, name: "E-commerce Strategy Conference", status: "present" },
   ];
 
   const [formData, setFormData] = useState({
@@ -402,19 +411,60 @@ const Feedback = () => {
         </div>
       )}
 
-      <div className="w-full p-8 bg-gray-100 shadow-lg rounded-lg flex flex-col lg:flex-row space-y-8 lg:space-y-0 lg:space-x-8 transition-all duration-500 relative min-h-screen">
+      <div
+        className={`w-full p-8 ${
+          darkMode ? "bg-gray-800" : "bg-gray-100"
+        } shadow-lg rounded-lg flex flex-col lg:flex-row space-y-8 lg:space-y-0 lg:space-x-8 transition-all duration-500 relative min-h-screen`}
+      >
         {/* Feedback Form */}
-        <div className="w-full lg:w-1/2 bg-white p-8 rounded-lg shadow-md transition-all duration-300 flex flex-col">
-          <h1 className="text-3xl font-bold mb-6 text-gray-800 transition-transform duration-200">
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-indigo-400 transition-all duration-300">
-              Event Feedback
-            </span>
-          </h1>
+        <div
+          className={`w-full lg:w-1/2 ${
+            darkMode ? "bg-gray-700" : "bg-white"
+          } p-8 rounded-lg shadow-md transition-all duration-300 flex flex-col`}
+        >
+          <div className="flex justify-between items-center mb-6">
+            <h1
+              className={`text-3xl font-bold ${
+                darkMode ? "text-white" : "text-gray-800"
+              } transition-transform duration-200`}
+            >
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-indigo-600 transition-all duration-300">
+                Event Feedback
+              </span>
+            </h1>
+
+            {/* Back Button */}
+            <button
+              onClick={handleGoBack}
+              className={`py-2 px-4 flex items-center text-sm rounded-lg ${
+                darkMode
+                  ? "bg-gray-600 text-gray-200 hover:bg-gray-500"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              } transition-all duration-200`}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 mr-1"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              Back
+            </button>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-6 flex-grow">
             <div className="transition-all duration-200 transform">
               <label
                 htmlFor="name"
-                className="block text-sm font-medium text-gray-700 transition-colors duration-200"
+                className={`block text-sm font-medium ${
+                  darkMode ? "text-gray-200" : "text-gray-700"
+                } transition-colors duration-200`}
               >
                 Name <span className="text-red-500">*</span>
               </label>
@@ -427,8 +477,14 @@ const Feedback = () => {
                 onChange={handleChange}
                 onKeyDown={(e) => handleKeyDown(e, emailRef)}
                 className={`mt-1 block w-full px-4 py-2 border ${
-                  errors.name ? "border-red-500" : "border-gray-300"
-                } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all duration-200`}
+                  errors.name
+                    ? "border-red-500"
+                    : darkMode
+                    ? "border-gray-600"
+                    : "border-gray-300"
+                } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all duration-200 ${
+                  darkMode ? "bg-gray-600 text-white" : "bg-white text-gray-900"
+                }`}
               />
               {errors.name && (
                 <p className="mt-1 text-sm text-red-500">{errors.name}</p>
@@ -437,7 +493,9 @@ const Feedback = () => {
             <div className="transition-all duration-200 transform">
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-700 transition-colors duration-200"
+                className={`block text-sm font-medium ${
+                  darkMode ? "text-gray-200" : "text-gray-700"
+                } transition-colors duration-200`}
               >
                 Email <span className="text-red-500">*</span>
               </label>
@@ -450,8 +508,14 @@ const Feedback = () => {
                 onChange={handleChange}
                 onKeyDown={(e) => handleKeyDown(e, eventRef)}
                 className={`mt-1 block w-full px-4 py-2 border ${
-                  errors.email ? "border-red-500" : "border-gray-300"
-                } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all duration-200`}
+                  errors.email
+                    ? "border-red-500"
+                    : darkMode
+                    ? "border-gray-600"
+                    : "border-gray-300"
+                } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all duration-200 ${
+                  darkMode ? "bg-gray-600 text-white" : "bg-white text-gray-900"
+                }`}
               />
               {errors.email && (
                 <p className="mt-1 text-sm text-red-500">{errors.email}</p>
@@ -462,19 +526,27 @@ const Feedback = () => {
             <div className="transition-all duration-200 transform">
               <label
                 htmlFor="event"
-                className="block text-sm font-medium text-gray-700 transition-colors duration-200"
+                className={`block text-sm font-medium ${
+                  darkMode ? "text-gray-200" : "text-gray-700"
+                } transition-colors duration-200`}
               >
                 Event <span className="text-red-500">*</span>
               </label>
 
               {/* Event Filter Tabs */}
-              <div className="flex border-b border-gray-200 mb-3">
+              <div
+                className={`flex border-b ${
+                  darkMode ? "border-gray-600" : "border-gray-200"
+                } mb-3`}
+              >
                 <button
                   type="button"
                   onClick={() => setEventFilter("all")}
                   className={`py-2 px-4 text-sm font-medium ${
                     eventFilter === "all"
-                      ? "text-indigo-600 border-b-2 border-indigo-600"
+                      ? "text-indigo-500 border-b-2 border-indigo-500"
+                      : darkMode
+                      ? "text-gray-400 hover:text-gray-300"
                       : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
@@ -485,7 +557,9 @@ const Feedback = () => {
                   onClick={() => setEventFilter("present")}
                   className={`py-2 px-4 text-sm font-medium ${
                     eventFilter === "present"
-                      ? "text-indigo-600 border-b-2 border-indigo-600"
+                      ? "text-indigo-500 border-b-2 border-indigo-500"
+                      : darkMode
+                      ? "text-gray-400 hover:text-gray-300"
                       : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
@@ -496,7 +570,9 @@ const Feedback = () => {
                   onClick={() => setEventFilter("past")}
                   className={`py-2 px-4 text-sm font-medium ${
                     eventFilter === "past"
-                      ? "text-indigo-600 border-b-2 border-indigo-600"
+                      ? "text-indigo-500 border-b-2 border-indigo-500"
+                      : darkMode
+                      ? "text-gray-400 hover:text-gray-300"
                       : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
@@ -517,8 +593,14 @@ const Feedback = () => {
                   )
                 }
                 className={`mt-1 block w-full px-4 py-2 border ${
-                  errors.event ? "border-red-500" : "border-gray-300"
-                } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all duration-200`}
+                  errors.event
+                    ? "border-red-500"
+                    : darkMode
+                    ? "border-gray-600"
+                    : "border-gray-300"
+                } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all duration-200 ${
+                  darkMode ? "bg-gray-600 text-white" : "bg-white text-gray-900"
+                }`}
               >
                 <option value="">Select an event</option>
                 {filteredEvents.map((event) => (
@@ -537,7 +619,9 @@ const Feedback = () => {
                 <div className="mt-3">
                   <label
                     htmlFor="customEvent"
-                    className="block text-sm font-medium text-gray-700"
+                    className={`block text-sm font-medium ${
+                      darkMode ? "text-gray-200" : "text-gray-700"
+                    }`}
                   >
                     Custom Event Name <span className="text-red-500">*</span>
                   </label>
@@ -551,8 +635,16 @@ const Feedback = () => {
                     onKeyDown={(e) => handleKeyDown(e, messageRef)}
                     placeholder="Enter event name"
                     className={`mt-1 block w-full px-4 py-2 border ${
-                      errors.customEvent ? "border-red-500" : "border-gray-300"
-                    } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
+                      errors.customEvent
+                        ? "border-red-500"
+                        : darkMode
+                        ? "border-gray-600"
+                        : "border-gray-300"
+                    } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${
+                      darkMode
+                        ? "bg-gray-600 text-white placeholder-gray-400"
+                        : "bg-white text-gray-900"
+                    }`}
                   />
                   {errors.customEvent && (
                     <p className="mt-1 text-sm text-red-500">
@@ -566,7 +658,9 @@ const Feedback = () => {
             <div className="transition-all duration-200 transform">
               <label
                 htmlFor="message"
-                className="block text-sm font-medium text-gray-700 transition-colors duration-200"
+                className={`block text-sm font-medium ${
+                  darkMode ? "text-gray-200" : "text-gray-700"
+                } transition-colors duration-200`}
               >
                 Feedback <span className="text-red-500">*</span>
               </label>
@@ -585,10 +679,20 @@ const Feedback = () => {
                 }}
                 rows="4"
                 className={`mt-1 block w-full px-4 py-2 border ${
-                  errors.message ? "border-red-500" : "border-gray-300"
-                } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all duration-200`}
+                  errors.message
+                    ? "border-red-500"
+                    : darkMode
+                    ? "border-gray-600"
+                    : "border-gray-300"
+                } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all duration-200 ${
+                  darkMode ? "bg-gray-600 text-white" : "bg-white text-gray-900"
+                }`}
               />
-              <p className="mt-1 text-xs text-gray-500">
+              <p
+                className={`mt-1 text-xs ${
+                  darkMode ? "text-gray-400" : "text-gray-500"
+                }`}
+              >
                 Press Ctrl+Enter to move to Rating
               </p>
               {errors.message && (
@@ -596,7 +700,11 @@ const Feedback = () => {
               )}
             </div>
             <div className="transition-all duration-200 transform">
-              <label className="block text-sm font-medium text-gray-700 mb-3 transition-colors duration-200">
+              <label
+                className={`block text-sm font-medium ${
+                  darkMode ? "text-gray-200" : "text-gray-700"
+                } mb-3 transition-colors duration-200`}
+              >
                 Rating <span className="text-red-500">*</span>
               </label>
               <div
@@ -611,9 +719,13 @@ const Feedback = () => {
                     submitRef.current?.focus();
                   }
                 }}
-                className={`flex space-x-3 items-center bg-gray-50 p-3 rounded-md ${
+                className={`flex space-x-3 items-center ${
+                  darkMode ? "bg-gray-600" : "bg-gray-50"
+                } p-3 rounded-md ${
                   errors.rating
                     ? "border border-red-500"
+                    : darkMode
+                    ? "border border-gray-500"
                     : "border border-gray-100"
                 }`}
               >
@@ -625,13 +737,21 @@ const Feedback = () => {
                     className={`w-12 h-12 flex items-center justify-center rounded-full ${
                       formData.rating >= star
                         ? "text-yellow-500 bg-yellow-50"
+                        : darkMode
+                        ? "text-gray-400 bg-gray-700"
                         : "text-gray-300 bg-white"
-                    } text-2xl transition-transform duration-200 shadow-sm border border-gray-200`}
+                    } text-2xl transition-transform duration-200 shadow-sm border ${
+                      darkMode ? "border-gray-500" : "border-gray-200"
+                    }`}
                   >
                     ★
                   </button>
                 ))}
-                <span className="ml-3 text-gray-600 font-medium">
+                <span
+                  className={`ml-3 ${
+                    darkMode ? "text-gray-300" : "text-gray-600"
+                  } font-medium`}
+                >
                   {formData.rating > 0
                     ? `${formData.rating} ${
                         formData.rating === 1 ? "Star" : "Stars"
@@ -639,44 +759,26 @@ const Feedback = () => {
                     : "No Rating"}
                 </span>
               </div>
-              <p className="mt-1 text-xs text-gray-500">
+              <p
+                className={`mt-1 text-xs ${
+                  darkMode ? "text-gray-400" : "text-gray-500"
+                }`}
+              >
                 Use number keys 1-5 to select rating
               </p>
               {errors.rating && (
                 <p className="mt-1 text-sm text-red-500">{errors.rating}</p>
               )}
             </div>
-            <div className="flex space-x-4">
-              <button
-                onClick={handleGoBack}
-                type="button"
-                className="w-1/2 py-3 px-4 border border-indigo-300 shadow-sm text-sm font-medium rounded-md text-indigo-700 bg-white hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200"
-              >
-                <span className="flex items-center justify-center">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 mr-2"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  Back
-                </span>
-              </button>
-
+            <div className="flex">
               <button
                 ref={submitRef}
                 type="submit"
                 disabled={submitting}
-                className={`w-1/2 py-3 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white ${
+                className={`w-full py-3 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white ${
                   submitting
                     ? "bg-indigo-400 cursor-not-allowed"
-                    : "bg-indigo-600"
+                    : "bg-indigo-600 hover:bg-indigo-700"
                 } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200`}
               >
                 {submitting ? (
@@ -712,7 +814,11 @@ const Feedback = () => {
         </div>
 
         {/* Feedback Display */}
-        <FeedbackList feedbackList={feedbackList} handleDelete={handleDelete} />
+        <FeedbackList
+          feedbackList={feedbackList}
+          handleDelete={handleDelete}
+          darkMode={darkMode}
+        />
       </div>
     </>
   );

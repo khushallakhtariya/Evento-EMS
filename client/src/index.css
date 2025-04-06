@@ -9,17 +9,41 @@ body{
   font-family: Poppins;
 }
 
+.dark body {
+  background-color: #121212;
+  color: #e0e0e0;
+}
+
 button.primary{
   @apply text-white py-2 px-4 bg-primary cursor-pointer ring-1 ring-primary rounded font-bold hover:bg-white hover:shadow-lg duration-75 hover:ring-primarydark hover:text-primary;
 }
+
+.dark button.primary {
+  @apply text-white py-2 px-4 bg-dark-primary cursor-pointer ring-1 ring-dark-primary rounded font-bold hover:bg-dark-surface hover:shadow-lg duration-75 hover:ring-dark-primary hover:text-dark-primary;
+}
+
 button.secondary{
   @apply flex items-center gap-2 text-primary py-2 px-4 bg-primarylight cursor-pointer ring-1 font-bold ring-primarylight rounded  hover:bg-primarydark hover:shadow-lg duration-75 hover:ring-primarydark hover:text-white;
 }
+
+.dark button.secondary {
+  @apply flex items-center gap-2 text-dark-primary py-2 px-4 bg-gray-800 cursor-pointer ring-1 font-bold ring-gray-700 rounded hover:bg-gray-900 hover:shadow-lg duration-75 hover:ring-dark-primary hover:text-white;
+}
+
 div.input{
   @apply flex bg-background rounded w-full py-2.5 px-4 gap-4 items-center shadow-sm border border-transparent focus-within:border-primary transition-all;
 }
+
+.dark div.input {
+  @apply flex bg-dark-surface rounded w-full py-2.5 px-4 gap-4 items-center shadow-sm border border-transparent focus-within:border-dark-primary transition-all;
+}
+
 input.input-et{
   @apply text-base bg-inherit text-black outline-none w-full;
+}
+
+.dark input.input-et {
+  @apply text-base bg-inherit text-dark-text outline-none w-full;
 }
 
 /* Enhanced form elements */
