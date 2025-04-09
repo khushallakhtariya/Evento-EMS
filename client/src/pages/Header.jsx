@@ -232,7 +232,35 @@ export default function Header() {
         )}
 
         <div className="hidden lg:flex gap-5 text-sm">
+          <Link to={"/help"}>
+            <div
+              className={`flex flex-col place-items-center py-1 px-3 rounded cursor-pointer transform hover:-translate-y-1 transition-all duration-300 ${
+                darkMode
+                  ? "hover:bg-gray-800 hover:text-primary"
+                  : "hover:text-primarydark hover:bg-white hover:shadow-md"
+              }`}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-5 py-1"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"
+                />
+              </svg>
+              <div>Help</div>
+            </div>
+          </Link>
+
           <Link to={"/feedback"}>
+            {" "}
+            {/*TODO:Route feedback page after creating it */}
             <div
               className={`flex flex-col place-items-center py-1 px-3 rounded cursor-pointer transform hover:-translate-y-1 transition-all duration-300 ${
                 darkMode
@@ -375,6 +403,17 @@ export default function Header() {
                   to={"/createEvent"}
                 >
                   Create Event
+                </Link>
+
+                <Link
+                  className={`flex py-2 pl-6 pr-8 rounded-lg transition-all duration-300 ${
+                    darkMode
+                      ? "hover:bg-gray-700 hover:text-primary"
+                      : "hover:bg-gray-100 hover:text-primary hover:shadow"
+                  }`}
+                  to={"/help"}
+                >
+                  <div>Help</div>
                 </Link>
 
                 <Link

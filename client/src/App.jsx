@@ -18,6 +18,8 @@ import OrderSummary from "./pages/OrderSummary";
 import PaymentSummary from "./pages/PaymentSummary";
 import TicketPage from "./pages/TicketPage";
 import Feedback from "./pages/Feedback";
+import Help from "./pages/Help";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 // import CreatEvent from './pages/CreateEvent'
 
@@ -37,6 +39,9 @@ function App() {
             <Route path="/calendar" element={<CalendarView />} />
             <Route path="/wallet" element={<TicketPage />} />
             <Route path="/feedback" element={<Feedback />} />
+            <Route path="/help" element={<Help />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+
             <Route path="/event/:id/ordersummary" element={<OrderSummary />} />
           </Route>
 
