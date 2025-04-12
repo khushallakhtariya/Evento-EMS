@@ -20,6 +20,8 @@ export default function AddEvent() {
     ticketPrice: 0,
     image: "",
     likes: 0,
+    Participants: 100,
+    Count: 0,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [touched, setTouched] = useState({});
@@ -34,6 +36,7 @@ export default function AddEvent() {
     optional: useRef(null),
     eventTime: useRef(null),
     ticketPrice: useRef(null),
+    Participants: useRef(null),
     image: useRef(null),
   };
 
@@ -54,6 +57,11 @@ export default function AddEvent() {
       error = "Location is required";
     } else if (name === "ticketPrice" && (isNaN(value) || Number(value) < 0)) {
       error = "Ticket price must be a positive number";
+    } else if (
+      name === "Participants" &&
+      (isNaN(value) || Number(value) <= 0)
+    ) {
+      error = "Capacity must be a positive number greater than zero";
     }
 
     return error;
@@ -123,6 +131,7 @@ export default function AddEvent() {
       eventTime: true,
       location: true,
       ticketPrice: true,
+      Participants: true,
       image: true,
     };
     setTouched(allFields);
@@ -170,6 +179,8 @@ export default function AddEvent() {
     newFormData.append("eventTime", formData.eventTime);
     newFormData.append("location", formData.location);
     newFormData.append("ticketPrice", formData.ticketPrice);
+    newFormData.append("Participants", formData.Participants);
+    newFormData.append("Count", formData.Count);
 
     axios
       .post("/createEvent", newFormData)
@@ -198,6 +209,8 @@ export default function AddEvent() {
           ticketPrice: 0,
           image: "",
           likes: 0,
+          Participants: 100,
+          Count: 0,
         });
         setTouched({});
         setErrors({});
@@ -225,8 +238,8 @@ export default function AddEvent() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 p-0">
-      <div className="flex flex-col w-full max-w-full p-4 md:p-8 bg-white dark:bg-gray-800 shadow-xl transition-all duration-300 hover:shadow-2xl border-x-0 border-t border-b border-gray-200 dark:border-gray-700">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="w-[90%] mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-2xl overflow-hidden transition-all duration-300">
         <ToastContainer
           position="top-center"
           autoClose={3000}
@@ -240,31 +253,37 @@ export default function AddEvent() {
           theme={darkMode ? "dark" : "light"}
           className="toast-container"
         />
-        <h1 className="font-bold text-[36px] mb-8 text-center text-gray-800 dark:text-gray-100 relative">
-          <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 py-6">
+          <h1 className="text-4xl font-extrabold text-center text-white">
             Post An Event
-          </span>
-          <div className="h-1 w-24 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full mx-auto mt-2"></div>
-        </h1>
+          </h1>
+          <p className="text-center text-blue-100 mt-2">
+            Fill out the form below to create a new event
+          </p>
+        </div>
 
         <form
           onSubmit={handleSubmit}
-          className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full max-w-7xl mx-auto px-4"
+          className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 md:p-8"
         >
-          <div className="flex flex-col gap-5">
-            <label className="flex flex-col text-gray-700 dark:text-gray-200 font-medium">
-              Title:
+          <div className="flex flex-col gap-6 w-full">
+            <label className="form-control">
+              <div className="label">
+                <span className="text-gray-700 dark:text-gray-200 font-medium">
+                  Title
+                </span>
+              </div>
               <input
                 type="text"
                 name="title"
                 ref={inputRefs.title}
                 onKeyDown={(e) => handleKeyDown(e, "description")}
-                className={`input-field mt-1 border p-3 rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 shadow-sm
-                  ${
-                    touched.title && errors.title
-                      ? "border-red-500 bg-red-50 dark:bg-red-900/20 focus:ring-red-200 dark:focus:ring-red-800"
-                      : "border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-transparent hover:border-blue-400 dark:bg-gray-700 dark:text-white"
-                  }`}
+                className={`w-full px-4 py-3 rounded-lg border ${
+                  touched.title && errors.title
+                    ? "border-red-500 bg-red-50 dark:bg-red-900/20"
+                    : "border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                } focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200`}
                 value={formData.title}
                 onChange={handleChange}
                 onBlur={handleBlur}
@@ -272,23 +291,27 @@ export default function AddEvent() {
                 aria-label="Event Title"
               />
               {touched.title && errors.title && (
-                <span className="text-red-500 dark:text-red-400 text-sm mt-1 ml-1">
+                <span className="text-red-500 dark:text-red-400 text-sm mt-1">
                   {errors.title}
                 </span>
               )}
             </label>
-            <label className="flex flex-col text-gray-700 dark:text-gray-200 font-medium">
-              Description:
+
+            <label className="form-control">
+              <div className="label">
+                <span className="text-gray-700 dark:text-gray-200 font-medium">
+                  Description
+                </span>
+              </div>
               <textarea
                 name="description"
                 ref={inputRefs.description}
                 onKeyDown={(e) => handleKeyDown(e, "eventDate")}
-                className={`input-field mt-1 border p-3 rounded-lg h-28 focus:outline-none focus:ring-2 transition-all duration-200 shadow-sm resize-none
-                  ${
-                    touched.description && errors.description
-                      ? "border-red-500 bg-red-50 dark:bg-red-900/20 focus:ring-red-200 dark:focus:ring-red-800"
-                      : "border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-transparent hover:border-blue-400 dark:bg-gray-700 dark:text-white"
-                  }`}
+                className={`w-full px-4 py-3 rounded-lg border ${
+                  touched.description && errors.description
+                    ? "border-red-500 bg-red-50 dark:bg-red-900/20"
+                    : "border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                } focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 resize-none h-32`}
                 value={formData.description}
                 onChange={handleChange}
                 onBlur={handleBlur}
@@ -296,48 +319,86 @@ export default function AddEvent() {
                 aria-label="Event Description"
               ></textarea>
               {touched.description && errors.description && (
-                <span className="text-red-500 dark:text-red-400 text-sm mt-1 ml-1">
+                <span className="text-red-500 dark:text-red-400 text-sm mt-1">
                   {errors.description}
                 </span>
               )}
             </label>
-            <label className="flex flex-col text-gray-700 dark:text-gray-200 font-medium">
-              Event Date:
-              <input
-                type="date"
-                name="eventDate"
-                ref={inputRefs.eventDate}
-                onKeyDown={(e) => handleKeyDown(e, "location")}
-                className={`input-field mt-1 border p-3 rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 shadow-sm
-                  ${
+
+            <div className="grid grid-cols-2 gap-4">
+              <label className="form-control">
+                <div className="label">
+                  <span className="text-gray-700 dark:text-gray-200 font-medium">
+                    Event Date
+                  </span>
+                </div>
+                <input
+                  type="date"
+                  name="eventDate"
+                  ref={inputRefs.eventDate}
+                  onKeyDown={(e) => handleKeyDown(e, "location")}
+                  className={`w-full px-4 py-3 rounded-lg border ${
                     touched.eventDate && errors.eventDate
-                      ? "border-red-500 bg-red-50 dark:bg-red-900/20 focus:ring-red-200 dark:focus:ring-red-800"
-                      : "border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-transparent hover:border-blue-400 dark:bg-gray-700 dark:text-white"
-                  }`}
-                value={formData.eventDate}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                aria-label="Event Date"
-              />
-              {touched.eventDate && errors.eventDate && (
-                <span className="text-red-500 dark:text-red-400 text-sm mt-1 ml-1">
-                  {errors.eventDate}
+                      ? "border-red-500 bg-red-50 dark:bg-red-900/20"
+                      : "border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  } focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200`}
+                  value={formData.eventDate}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  aria-label="Event Date"
+                />
+                {touched.eventDate && errors.eventDate && (
+                  <span className="text-red-500 dark:text-red-400 text-sm mt-1">
+                    {errors.eventDate}
+                  </span>
+                )}
+              </label>
+
+              <label className="form-control">
+                <div className="label">
+                  <span className="text-gray-700 dark:text-gray-200 font-medium">
+                    Event Time
+                  </span>
+                </div>
+                <input
+                  type="time"
+                  name="eventTime"
+                  ref={inputRefs.eventTime}
+                  onKeyDown={(e) => handleKeyDown(e, "ticketPrice")}
+                  className={`w-full px-4 py-3 rounded-lg border ${
+                    touched.eventTime && errors.eventTime
+                      ? "border-red-500 bg-red-50 dark:bg-red-900/20"
+                      : "border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  } focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200`}
+                  value={formData.eventTime}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  aria-label="Event Time"
+                />
+                {touched.eventTime && errors.eventTime && (
+                  <span className="text-red-500 dark:text-red-400 text-sm mt-1">
+                    {errors.eventTime}
+                  </span>
+                )}
+              </label>
+            </div>
+
+            <label className="form-control">
+              <div className="label">
+                <span className="text-gray-700 dark:text-gray-200 font-medium">
+                  Location
                 </span>
-              )}
-            </label>
-            <label className="flex flex-col text-gray-700 dark:text-gray-200 font-medium">
-              Location:
+              </div>
               <input
                 type="text"
                 name="location"
                 ref={inputRefs.location}
                 onKeyDown={(e) => handleKeyDown(e, "optional")}
-                className={`input-field mt-1 border p-3 rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 shadow-sm
-                  ${
-                    touched.location && errors.location
-                      ? "border-red-500 bg-red-50 dark:bg-red-900/20 focus:ring-red-200 dark:focus:ring-red-800"
-                      : "border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-transparent hover:border-blue-400 dark:bg-gray-700 dark:text-white"
-                  }`}
+                className={`w-full px-4 py-3 rounded-lg border ${
+                  touched.location && errors.location
+                    ? "border-red-500 bg-red-50 dark:bg-red-900/20"
+                    : "border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                } focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200`}
                 value={formData.location}
                 onChange={handleChange}
                 onBlur={handleBlur}
@@ -345,41 +406,30 @@ export default function AddEvent() {
                 aria-label="Event Location"
               />
               {touched.location && errors.location && (
-                <span className="text-red-500 dark:text-red-400 text-sm mt-1 ml-1">
+                <span className="text-red-500 dark:text-red-400 text-sm mt-1">
                   {errors.location}
                 </span>
               )}
             </label>
           </div>
 
-          <div className="flex flex-col gap-5">
-            <label className="flex flex-col text-gray-700 dark:text-gray-200 font-medium">
-              Optional:
-              <input
-                type="text"
-                name="optional"
-                ref={inputRefs.optional}
-                onKeyDown={(e) => handleKeyDown(e, "organizedBy")}
-                className="input-field mt-1 border border-gray-300 dark:border-gray-600 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-blue-400 transition-all duration-200 shadow-sm dark:bg-gray-700 dark:text-white"
-                value={formData.optional}
-                onChange={handleChange}
-                placeholder="Optional information"
-                aria-label="Optional Information"
-              />
-            </label>
-            <label className="flex flex-col text-gray-700 dark:text-gray-200 font-medium">
-              Organized By:
+          <div className="flex flex-col gap-6 w-full">
+            <label className="form-control">
+              <div className="label">
+                <span className="text-gray-700 dark:text-gray-200 font-medium">
+                  Organized By
+                </span>
+              </div>
               <input
                 type="text"
                 name="organizedBy"
                 ref={inputRefs.organizedBy}
                 onKeyDown={(e) => handleKeyDown(e, "eventTime")}
-                className={`input-field mt-1 border p-3 rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 shadow-sm
-                  ${
-                    touched.organizedBy && errors.organizedBy
-                      ? "border-red-500 bg-red-50 dark:bg-red-900/20 focus:ring-red-200 dark:focus:ring-red-800"
-                      : "border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-transparent hover:border-blue-400 dark:bg-gray-700 dark:text-white"
-                  }`}
+                className={`w-full px-4 py-3 rounded-lg border ${
+                  touched.organizedBy && errors.organizedBy
+                    ? "border-red-500 bg-red-50 dark:bg-red-900/20"
+                    : "border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                } focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200`}
                 value={formData.organizedBy}
                 onChange={handleChange}
                 onBlur={handleBlur}
@@ -387,97 +437,146 @@ export default function AddEvent() {
                 aria-label="Organized By"
               />
               {touched.organizedBy && errors.organizedBy && (
-                <span className="text-red-500 dark:text-red-400 text-sm mt-1 ml-1">
+                <span className="text-red-500 dark:text-red-400 text-sm mt-1">
                   {errors.organizedBy}
                 </span>
               )}
             </label>
-            <label className="flex flex-col text-gray-700 dark:text-gray-200 font-medium">
-              Event Time:
-              <input
-                type="time"
-                name="eventTime"
-                ref={inputRefs.eventTime}
-                onKeyDown={(e) => handleKeyDown(e, "ticketPrice")}
-                className={`input-field mt-1 border p-3 rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 shadow-sm
-                  ${
-                    touched.eventTime && errors.eventTime
-                      ? "border-red-500 bg-red-50 dark:bg-red-900/20 focus:ring-red-200 dark:focus:ring-red-800"
-                      : "border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-transparent hover:border-blue-400 dark:bg-gray-700 dark:text-white"
-                  }`}
-                value={formData.eventTime}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                aria-label="Event Time"
-              />
-              {touched.eventTime && errors.eventTime && (
-                <span className="text-red-500 dark:text-red-400 text-sm mt-1 ml-1">
-                  {errors.eventTime}
+
+            <label className="form-control">
+              <div className="label">
+                <span className="text-gray-700 dark:text-gray-200 font-medium">
+                  Additional Information (Optional)
                 </span>
-              )}
-            </label>
-            <label className="flex flex-col text-gray-700 dark:text-gray-200 font-medium">
-              Ticket Price:
+              </div>
               <input
-                type="number"
-                name="ticketPrice"
-                ref={inputRefs.ticketPrice}
-                onKeyDown={(e) => handleKeyDown(e, "image")}
-                className={`input-field mt-1 border p-3 rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 shadow-sm
-                  ${
-                    touched.ticketPrice && errors.ticketPrice
-                      ? "border-red-500 bg-red-50 dark:bg-red-900/20 focus:ring-red-200 dark:focus:ring-red-800"
-                      : "border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-transparent hover:border-blue-400 dark:bg-gray-700 dark:text-white"
-                  }`}
-                value={formData.ticketPrice}
+                type="text"
+                name="optional"
+                ref={inputRefs.optional}
+                onKeyDown={(e) => handleKeyDown(e, "organizedBy")}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+                value={formData.optional}
                 onChange={handleChange}
-                onBlur={handleBlur}
-                placeholder="Price in USD"
-                aria-label="Ticket Price"
+                placeholder="Optional information"
+                aria-label="Optional Information"
               />
-              {touched.ticketPrice && errors.ticketPrice && (
-                <span className="text-red-500 dark:text-red-400 text-sm mt-1 ml-1">
-                  {errors.ticketPrice}
-                </span>
-              )}
             </label>
-            <label className="flex flex-col text-gray-700 dark:text-gray-200 font-medium">
-              Image:
+
+            <div className="grid grid-cols-2 gap-4">
+              <label className="form-control">
+                <div className="label">
+                  <span className="text-gray-700 dark:text-gray-200 font-medium">
+                    Ticket Price
+                  </span>
+                </div>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400">
+                    $
+                  </span>
+                  <input
+                    type="number"
+                    name="ticketPrice"
+                    ref={inputRefs.ticketPrice}
+                    onKeyDown={(e) => handleKeyDown(e, "Participants")}
+                    className={`w-full pl-8 pr-4 py-3 rounded-lg border ${
+                      touched.ticketPrice && errors.ticketPrice
+                        ? "border-red-500 bg-red-50 dark:bg-red-900/20"
+                        : "border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    } focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200`}
+                    value={formData.ticketPrice}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    placeholder="0"
+                    aria-label="Ticket Price"
+                  />
+                </div>
+                {touched.ticketPrice && errors.ticketPrice && (
+                  <span className="text-red-500 dark:text-red-400 text-sm mt-1">
+                    {errors.ticketPrice}
+                  </span>
+                )}
+              </label>
+
+              <label className="form-control">
+                <div className="label">
+                  <span className="text-gray-700 dark:text-gray-200 font-medium">
+                    Event Capacity
+                  </span>
+                </div>
+                <input
+                  type="number"
+                  name="Participants"
+                  ref={inputRefs.Participants}
+                  onKeyDown={(e) => handleKeyDown(e, "image")}
+                  className={`w-full px-4 py-3 rounded-lg border ${
+                    touched.Participants && errors.Participants
+                      ? "border-red-500 bg-red-50 dark:bg-red-900/20"
+                      : "border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  } focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200`}
+                  value={formData.Participants}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  placeholder="Maximum participants"
+                  aria-label="Event Capacity"
+                  min="1"
+                />
+                {touched.Participants && errors.Participants && (
+                  <span className="text-red-500 dark:text-red-400 text-sm mt-1">
+                    {errors.Participants}
+                  </span>
+                )}
+                <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Maximum number of people who can attend
+                </span>
+              </label>
+            </div>
+
+            <label className="form-control">
+              <div className="label">
+                <span className="text-gray-700 dark:text-gray-200 font-medium">
+                  Event Image
+                </span>
+              </div>
               <div className="relative mt-1">
                 <input
                   type="file"
                   name="image"
                   ref={inputRefs.image}
                   onKeyDown={(e) => handleKeyDown(e, "submit")}
-                  className={`input-field w-full border p-3 rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 shadow-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-50 file:text-blue-700 dark:file:bg-blue-900 dark:file:text-blue-300 hover:file:bg-blue-100 dark:hover:file:bg-blue-800
-                    ${
-                      touched.image && errors.image
-                        ? "border-red-500 bg-red-50 dark:bg-red-900/20 focus:ring-red-200 dark:focus:ring-red-800"
-                        : "border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-transparent hover:border-blue-400 dark:bg-gray-700 dark:text-white"
-                    }`}
+                  className={`w-full px-4 py-3 rounded-lg border ${
+                    touched.image && errors.image
+                      ? "border-red-500 bg-red-50 dark:bg-red-900/20"
+                      : "border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  } focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200
+                    file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 
+                    file:bg-blue-50 file:text-blue-700 dark:file:bg-blue-900 dark:file:text-blue-300 
+                    hover:file:bg-blue-100 dark:hover:file:bg-blue-800`}
                   onChange={handleImageUpload}
                   aria-label="Upload Image"
                 />
               </div>
               {touched.image && errors.image && (
-                <span className="text-red-500 dark:text-red-400 text-sm mt-1 ml-1">
+                <span className="text-red-500 dark:text-red-400 text-sm mt-1">
                   {errors.image}
                 </span>
               )}
+              <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Upload an image for your event (required)
+              </span>
             </label>
           </div>
 
-          <div className="col-span-2 flex justify-center mt-2">
+          <div className="col-span-1 md:col-span-2 flex justify-center mt-6">
             <button
-              className={`relative overflow-hidden primary bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-10 rounded-lg mt-4 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100 ${
-                isSubmitting ? "opacity-70 cursor-not-allowed" : ""
-              }`}
+              className={`relative overflow-hidden bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2.5 px-8 rounded-md 
+                font-medium text-base transition-all duration-300 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
+                ${isSubmitting ? "opacity-70 cursor-not-allowed" : ""}`}
               disabled={isSubmitting}
             >
               {isSubmitting ? (
                 <span className="flex items-center justify-center">
                   <svg
-                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -499,9 +598,9 @@ export default function AddEvent() {
                   Submitting...
                 </span>
               ) : (
-                "Submit Event"
+                "Create Event"
               )}
-              <div className="absolute inset-0 bg-white dark:bg-gray-300 rounded-lg opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-white rounded-md opacity-0 hover:opacity-10 transition-opacity duration-300"></div>
             </button>
           </div>
         </form>

@@ -15,6 +15,7 @@ export default function Header() {
   const [events, setEvents] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef();
+  const menuRef = useRef();
   const [storedUserData, setStoredUserData] = useState(null);
   //! Fetch events from the server -------------------------------------------------
   useEffect(() => {
@@ -44,6 +45,15 @@ export default function Header() {
         !searchInputRef.current.contains(event.target)
       ) {
         setSearchQuery("");
+      }
+
+      // Close menu when clicking outside
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target) &&
+        !event.target.closest(".menu-trigger")
+      ) {
+        setisMenuOpen(false);
       }
     };
 
@@ -344,7 +354,7 @@ export default function Header() {
 
         {/* -------------------IF user is Logged DO this Main-------------------- */}
         {!!user && (
-          <div className="flex flex-row items-center gap-2 sm:gap-8 ">
+          <div className="flex flex-row items-center gap-2 sm:gap-8 relative">
             <div className="flex items-center gap-2">
               <Link
                 to={"/useraccount"}
@@ -356,8 +366,13 @@ export default function Header() {
               </Link>
 
               <BsFillCaretDownFill
-                className="h-5 w-5 cursor-pointer hover:rotate-180 hover:text-primary transition-all duration-300"
-                onClick={() => setisMenuOpen(!isMenuOpen)}
+                className={`h-5 w-5 cursor-pointer hover:text-primary transition-all duration-300 menu-trigger ${
+                  isMenuOpen ? "rotate-180" : ""
+                }`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setisMenuOpen(!isMenuOpen);
+                }}
               />
             </div>
             <div className="hidden md:flex">
@@ -369,6 +384,96 @@ export default function Header() {
                 <RxExit />
               </button>
             </div>
+
+            {/* Dropdown Menu */}
+            {isMenuOpen && (
+              <div
+                ref={menuRef}
+                className={`absolute z-10 top-full right-0 mt-2 w-48 rounded-lg shadow-lg ${
+                  darkMode ? "bg-gray-800 text-white" : "bg-white text-black"
+                }`}
+              >
+                <div className="flex flex-col font-semibold text-[16px]">
+                  {storedUserData?.role === "admin" && (
+                    <Link
+                      className={`flex py-2 pt-3 pl-6 pr-8 rounded-lg transition-all duration-300 ${
+                        darkMode
+                          ? "hover:bg-gray-700 hover:text-primary"
+                          : "hover:bg-gray-100 hover:text-primary hover:shadow"
+                      }`}
+                      to={"/createEvent"}
+                      onClick={() => setisMenuOpen(false)}
+                    >
+                      Create Event
+                    </Link>
+                  )}
+
+                  <Link
+                    className={`flex py-2 ${
+                      storedUserData?.role === "admin" ? "" : "pt-3"
+                    } pl-6 pr-8 rounded-lg transition-all duration-300 ${
+                      darkMode
+                        ? "hover:bg-gray-700 hover:text-primary"
+                        : "hover:bg-gray-100 hover:text-primary hover:shadow"
+                    }`}
+                    to={"/help"}
+                    onClick={() => setisMenuOpen(false)}
+                  >
+                    <div>Help</div>
+                  </Link>
+
+                  <Link
+                    className={`flex py-2 pl-6 pr-8 rounded-lg transition-all duration-300 ${
+                      darkMode
+                        ? "hover:bg-gray-700 hover:text-primary"
+                        : "hover:bg-gray-100 hover:text-primary hover:shadow"
+                    }`}
+                    to={"/feedback"}
+                    onClick={() => setisMenuOpen(false)}
+                  >
+                    <div>Feedback</div>
+                  </Link>
+
+                  <Link
+                    className={`flex py-2 pl-6 pr-8 rounded-lg transition-all duration-300 ${
+                      darkMode
+                        ? "hover:bg-gray-700 hover:text-primary"
+                        : "hover:bg-gray-100 hover:text-primary hover:shadow"
+                    }`}
+                    to={"/wallet"}
+                    onClick={() => setisMenuOpen(false)}
+                  >
+                    <div>Wallet</div>
+                  </Link>
+
+                  <Link
+                    className={`flex py-2 pl-6 pr-8 rounded-lg transition-all duration-300 ${
+                      darkMode  
+                        ? "hover:bg-gray-700 hover:text-primary"
+                        : "hover:bg-gray-100 hover:text-primary hover:shadow"
+                    }`}
+                    to={"/calendar"}
+                    onClick={() => setisMenuOpen(false)}
+                  >
+                    <div>Calendar</div>
+                  </Link>
+
+                  <Link
+                    className={`flex py-2 pl-6 pb-3 pr-8 rounded-lg transition-all duration-300 ${
+                      darkMode
+                        ? "hover:bg-red-900 hover:text-red-400"
+                        : "hover:bg-red-100 hover:text-red-600 hover:shadow"
+                    }`}
+                    onClick={() => {
+                      setisMenuOpen(false);
+                      logout();
+                    }}
+                  >
+                    Log out
+                  </Link>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -380,80 +485,6 @@ export default function Header() {
                 <div>Sign in </div>
               </button>
             </Link>
-          </div>
-        )}
-
-        {/* -------------------IF user is Logged DO this Mobile -------------------- */}
-        {!!user && (
-          //w-auto flex flex-col absolute bg-white pl-2 pr-6 py-5 gap-4 rounded-xl
-          <div
-            className={`absolute z-10 mt-64 flex flex-col w-48 right-2 md:right-[160px] rounded-lg shadow-lg ${
-              darkMode ? "bg-gray-800 text-white" : "bg-white text-black"
-            }`}
-          >
-            {/* TODO: */}
-            <nav className={`block ${isMenuOpen ? "block" : "hidden"} `}>
-              <div className="flex flex-col font-semibold text-[16px]">
-                <Link
-                  className={`flex py-2 pt-3 pl-6 pr-8 rounded-lg transition-all duration-300 ${
-                    darkMode
-                      ? "hover:bg-gray-700 hover:text-primary"
-                      : "hover:bg-gray-100 hover:text-primary hover:shadow"
-                  }`}
-                  to={"/createEvent"}
-                >
-                  Create Event
-                </Link>
-
-                <Link
-                  className={`flex py-2 pl-6 pr-8 rounded-lg transition-all duration-300 ${
-                    darkMode
-                      ? "hover:bg-gray-700 hover:text-primary"
-                      : "hover:bg-gray-100 hover:text-primary hover:shadow"
-                  }`}
-                  to={"/help"}
-                >
-                  <div>Help</div>
-                </Link>
-
-                <Link
-                  className={`flex py-2 pl-6 pr-8 rounded-lg transition-all duration-300 ${
-                    darkMode
-                      ? "hover:bg-gray-700 hover:text-primary"
-                      : "hover:bg-gray-100 hover:text-primary hover:shadow"
-                  }`}
-                  to={"/wallet"}
-                >
-                  <div>Wallet</div>
-                </Link>
-
-                {/* <Link className="flex hover:bg-background hover:shadow py-2 pl-6 pr-8 rounded-lg" to={'/verification'}>
-                  <div>Center</div>
-                </Link> */}
-
-                <Link
-                  className={`flex py-2 pl-6 pr-8 rounded-lg transition-all duration-300 ${
-                    darkMode
-                      ? "hover:bg-gray-700 hover:text-primary"
-                      : "hover:bg-gray-100 hover:text-primary hover:shadow"
-                  }`}
-                  to={"/calendar"}
-                >
-                  <div>Calendar</div>
-                </Link>
-
-                <Link
-                  className={`flex py-2 pl-6 pb-3 pr-8 rounded-lg transition-all duration-300 ${
-                    darkMode
-                      ? "hover:bg-red-900 hover:text-red-400"
-                      : "hover:bg-red-100 hover:text-red-600 hover:shadow"
-                  }`}
-                  onClick={logout}
-                >
-                  Log out
-                </Link>
-              </div>
-            </nav>
           </div>
         )}
       </header>

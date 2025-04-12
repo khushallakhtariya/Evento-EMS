@@ -308,6 +308,18 @@ app.post("/tickets", async (req, res) => {
     const ticketDetails = req.body;
     const newTicket = new Ticket(ticketDetails);
     await newTicket.save();
+
+    // Update event Count
+    if (ticketDetails.eventid) {
+      const event = await Event.findById(ticketDetails.eventid);
+      if (event) {
+        // Increment Count by 1
+        event.Count = (event.Count || 0) + 1;
+        await event.save();
+        console.log(`Updated event ${event.title} Count to ${event.Count}`);
+      }
+    }
+
     return res.status(201).json({ ticket: newTicket });
   } catch (error) {
     console.error("Error creating ticket:", error);
