@@ -2,10 +2,12 @@ import React, { useState, useEffect, useRef, useContext } from "react";
 import FeedbackList from "./FeedbackList"; // Import the new component
 import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
 import { ThemeContext } from "../ThemeContext"; // Import ThemeContext
+import { UserContext } from "../UserContext"; // Import UserContext
 
 const Feedback = () => {
   const navigate = useNavigate(); // Initialize navigate for routing
   const { darkMode, toggleDarkMode } = useContext(ThemeContext); // Get darkMode and toggleDarkMode from context
+  const { user } = useContext(UserContext); // Get user from UserContext
   // Predefined list of past and present events
   const eventOptions = [
     { id: 1, name: "Annual Tech Conference 2023", status: "past" },
@@ -814,6 +816,7 @@ const Feedback = () => {
         </div>
 
         {/* Feedback Display */}
+        {console.log("Passing feedbackList to FeedbackList:", feedbackList)}
         <FeedbackList
           feedbackList={feedbackList}
           handleDelete={handleDelete}

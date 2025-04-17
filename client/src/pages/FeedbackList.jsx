@@ -1,11 +1,21 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { UserContext } from "../UserContext";
 
 const FeedbackList = ({ feedbackList, handleDelete, darkMode }) => {
   const { user } = useContext(UserContext);
 
+  // Log the user object to see what data we're getting
+  useEffect(() => {
+    console.log("Current user in FeedbackList:", user);
+  }, [user]);
+
   // Check if the logged in user is an admin
   const isAdmin = user && user.role === "admin";
+
+  // Log the admin status
+  useEffect(() => {
+    console.log("Is admin:", isAdmin);
+  }, [isAdmin]);
 
   return (
     <div
