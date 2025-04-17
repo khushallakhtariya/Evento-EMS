@@ -1,21 +1,71 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { UserContext } from "../UserContext";
 
-const FeedbackList = ({ feedbackList, handleDelete, darkMode }) => {
+const FeedbackList = ({
+  feedbackList,
+  handleDelete,
+  darkMode,
+  userIsAdmin,
+}) => {
   const { user } = useContext(UserContext);
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  // Log the user object to see what data we're getting
+  useEffect(() => {
+    // Set from parent prop if available
+    if (userIsAdmin) {
+      setIsAdmin(true);
+      return;
+    }
+
+    // Function to determine if user is admin
+    const checkAdminStatus = () => {
+      // First check context
+      if (user && user.role === "admin") {
+        setIsAdmin(true);
+        return;
+      }
+
+      // If not in context, check localStorage
+      try {
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          if (parsedUser && parsedUser.role === "admin") {
+            setIsAdmin(true);
+            return;
+          }
+        }
+        // Not an admin if neither condition is met
+        setIsAdmin(false);
+      } catch (error) {
+        console.error("Error checking admin status:", error);
+        setIsAdmin(false);
+      }
+    };
+
+    // Initial check
+    checkAdminStatus();
+
+    // Listen for storage events (like logout)
+    const handleStorageChange = () => {
+      checkAdminStatus();
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("app-logout", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("app-logout", handleStorageChange);
+    };
+  }, [user, userIsAdmin]);
+
+  // Debug log
   useEffect(() => {
     console.log("Current user in FeedbackList:", user);
-  }, [user]);
-
-  // Check if the logged in user is an admin
-  const isAdmin = user && user.role === "admin";
-
-  // Log the admin status
-  useEffect(() => {
     console.log("Is admin:", isAdmin);
-  }, [isAdmin]);
+    console.log("User is admin (from prop):", userIsAdmin);
+  }, [user, isAdmin, userIsAdmin]);
 
   return (
     <div
@@ -40,9 +90,9 @@ const FeedbackList = ({ feedbackList, handleDelete, darkMode }) => {
 
       {feedbackList.length > 0 ? (
         <div className="grid grid-cols-1 gap-6 max-h-[500px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-indigo-300 scrollbar-track-gray-100">
-          {feedbackList.map((feedback, index) => (
+          {feedbackList.map((feedback) => (
             <div
-              key={index}
+              key={feedback._id}
               className={`p-4 border rounded-md shadow-sm ${
                 darkMode
                   ? "bg-gray-600 border-gray-500"
@@ -112,10 +162,17 @@ const FeedbackList = ({ feedbackList, handleDelete, darkMode }) => {
               >
                 {feedback.message}
               </div>
-              <div className="flex justify-end">
+              <div className="flex justify-between">
+                <div
+                  className={`text-xs ${
+                    darkMode ? "text-gray-400" : "text-gray-500"
+                  }`}
+                >
+                  {new Date(feedback.date).toLocaleDateString()}
+                </div>
                 {isAdmin && (
                   <button
-                    onClick={() => handleDelete(index)}
+                    onClick={() => handleDelete(feedback._id)}
                     className="text-white bg-gradient-to-r from-red-500 to-red-600 text-sm px-4 py-2 rounded-md transition-all duration-300 flex items-center hover:from-red-600 hover:to-red-700 transform hover:scale-105 shadow-md"
                   >
                     <svg

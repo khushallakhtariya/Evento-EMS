@@ -11,6 +11,7 @@ const path = require("path");
 const crypto = require("crypto");
 
 const Ticket = require("./models/Ticket");
+const Feedback = require("./models/Feedback");
 
 const app = express();
 
@@ -223,11 +224,20 @@ const Event = mongoose.model("Event", eventSchema);
 app.post("/createEvent", upload.single("image"), async (req, res) => {
   try {
     const eventData = req.body;
-    eventData.image = req.file ? req.file.path : "";
+
+    // Check if this is a restore operation with an existing image path
+    if (req.body.existingImage) {
+      eventData.image = req.body.existingImage;
+    } else {
+      // Normal case: use the uploaded file path
+      eventData.image = req.file ? req.file.path : "";
+    }
+
     const newEvent = new Event(eventData);
     await newEvent.save();
     res.status(201).json(newEvent);
   } catch (error) {
+    console.error("Error creating event:", error);
     res.status(500).json({ error: "Failed to save the event to MongoDB" });
   }
 });
@@ -238,6 +248,90 @@ app.get("/createEvent", async (req, res) => {
     res.status(200).json(events);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch events from MongoDB" });
+  }
+});
+
+// PUT endpoint for updating events by admin
+app.put("/createEvent/:id", upload.single("image"), async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Get the token from cookies to verify admin status
+    const { token } = req.cookies;
+    if (!token) {
+      return res.status(401).json({ error: "Not authorized" });
+    }
+
+    // Verify the token and check if user is admin
+    try {
+      const userData = jwt.verify(token, jwtSecret);
+      const user = await UserModel.findById(userData.id);
+      if (!user || user.role !== "admin") {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+    } catch (err) {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+
+    // Get the event data from the request body
+    const eventData = req.body;
+
+    // If a new image is uploaded, update the image path
+    if (req.file) {
+      eventData.image = req.file.path;
+    }
+
+    // Update the event in the database
+    const updatedEvent = await Event.findByIdAndUpdate(
+      id,
+      eventData,
+      { new: true } // Return the updated document
+    );
+
+    if (!updatedEvent) {
+      return res.status(404).json({ error: "Event not found" });
+    }
+
+    res.status(200).json(updatedEvent);
+  } catch (error) {
+    console.error("Error updating event:", error);
+    res.status(500).json({ error: "Failed to update the event" });
+  }
+});
+
+// DELETE endpoint for removing events by admin
+app.delete("/createEvent/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Get the token from cookies to verify admin status
+    const { token } = req.cookies;
+    if (!token) {
+      return res.status(401).json({ error: "Not authorized" });
+    }
+
+    // Verify the token and check if user is admin
+    try {
+      const userData = jwt.verify(token, jwtSecret);
+      const user = await UserModel.findById(userData.id);
+      if (!user || user.role !== "admin") {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+    } catch (err) {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+
+    // Delete the event from the database
+    const deletedEvent = await Event.findByIdAndDelete(id);
+
+    if (!deletedEvent) {
+      return res.status(404).json({ error: "Event not found" });
+    }
+
+    res.status(200).json({ message: "Event deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting event:", error);
+    res.status(500).json({ error: "Failed to delete the event" });
   }
 });
 
@@ -403,6 +497,77 @@ app.post("/event/:id/invite", async (req, res) => {
   } catch (error) {
     console.error("Error sending invitation:", error);
     res.status(500).json({ error: "Failed to send invitation" });
+  }
+});
+
+// Feedback endpoints
+app.post("/feedback", async (req, res) => {
+  try {
+    const feedbackData = req.body;
+    const newFeedback = new Feedback(feedbackData);
+    await newFeedback.save();
+    res.status(201).json(newFeedback);
+  } catch (error) {
+    console.error("Error saving feedback:", error);
+    res.status(500).json({ error: "Failed to save feedback" });
+  }
+});
+
+app.get("/feedback", async (req, res) => {
+  try {
+    const feedbackList = await Feedback.find().sort({ date: -1 });
+    res.status(200).json(feedbackList);
+  } catch (error) {
+    console.error("Error fetching feedback:", error);
+    res.status(500).json({ error: "Failed to fetch feedback" });
+  }
+});
+
+app.delete("/feedback/:id", async (req, res) => {
+  try {
+    const { token } = req.cookies;
+    if (!token) {
+      return res.status(401).json({ error: "Not authorized" });
+    }
+
+    // Verify if user is admin
+    try {
+      const userData = jwt.verify(token, jwtSecret);
+      const user = await UserModel.findById(userData.id);
+      if (!user || user.role !== "admin") {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+    } catch (err) {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+
+    const { id } = req.params;
+    await Feedback.findByIdAndDelete(id);
+    res.status(200).json({ message: "Feedback deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting feedback:", error);
+    res.status(500).json({ error: "Failed to delete feedback" });
+  }
+});
+
+// Endpoint to get events for feedback page
+app.get("/events/for-feedback", async (req, res) => {
+  try {
+    // Get all events and extract only needed fields
+    const events = await Event.find({}, "title eventDate");
+
+    // Format events with status (past or present)
+    const currentDate = new Date();
+    const formattedEvents = events.map((event) => ({
+      id: event._id,
+      name: event.title,
+      status: new Date(event.eventDate) < currentDate ? "past" : "present",
+    }));
+
+    res.status(200).json(formattedEvents);
+  } catch (error) {
+    console.error("Error fetching events for feedback:", error);
+    res.status(500).json({ error: "Failed to fetch events" });
   }
 });
 

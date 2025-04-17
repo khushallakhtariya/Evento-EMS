@@ -17,6 +17,7 @@ export default function Header() {
   const searchInputRef = useRef();
   const menuRef = useRef();
   const [storedUserData, setStoredUserData] = useState(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   //! Fetch events from the server -------------------------------------------------
   useEffect(() => {
     axios
@@ -68,13 +69,39 @@ export default function Header() {
   //! Logout Function --------------------------------------------------------
   async function logout() {
     try {
+      setIsLoggingOut(true);
+
+      // Start a timer to ensure loader shows for at least 2 seconds
+      const startTime = Date.now();
+
+      // Perform the actual logout
       await axios.post("/logout");
+
+      // Dispatch custom logout event for components to listen for
+      window.dispatchEvent(new Event("app-logout"));
+
+      // Dispatch storage event to notify all tabs
+      window.dispatchEvent(new Event("storage"));
+
+      // Calculate how much time has elapsed since starting
+      const elapsedTime = Date.now() - startTime;
+      const remainingTime = Math.max(0, 2000 - elapsedTime);
+
+      // If less than 2 seconds have passed, wait for the remaining time
+      if (remainingTime > 0) {
+        await new Promise((resolve) => setTimeout(resolve, remainingTime));
+      }
+
+      // Complete the logout process
       setUser(null);
       localStorage.removeItem("user");
       setStoredUserData(null);
+
       toast.success("Logged out successfully!");
     } catch (error) {
       toast.error("Failed to log out. Please try again.");
+    } finally {
+      setIsLoggingOut(false);
     }
   }
   //! Search input ----------------------------------------------------------------
@@ -85,6 +112,38 @@ export default function Header() {
   return (
     <div className={darkMode ? "bg-dark-surface text-dark-text" : ""}>
       <ToastContainer />
+
+      {/* Full-page logout overlay */}
+      {isLoggingOut && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex flex-col items-center justify-center">
+          <div
+            className={`p-6 rounded-lg shadow-lg ${
+              darkMode ? "bg-gray-800" : "bg-white"
+            } flex flex-col items-center`}
+          >
+            <div
+              className={`w-12 h-12 border-t-2 border-b-2 ${
+                darkMode ? "border-blue-400" : "border-blue-500"
+              } rounded-full animate-spin mb-4`}
+            ></div>
+            <p
+              className={`text-lg font-medium ${
+                darkMode ? "text-white" : "text-gray-800"
+              }`}
+            >
+              Logging you out...
+            </p>
+            <p
+              className={`text-sm ${
+                darkMode ? "text-gray-300" : "text-gray-600"
+              } mt-2`}
+            >
+              Please wait a moment
+            </p>
+          </div>
+        </div>
+      )}
+
       <header
         className={`flex py-2 px-6 sm:px-6 justify-between place-items-center ${
           darkMode ? "bg-dark-surface text-dark-text" : ""
@@ -97,11 +156,12 @@ export default function Header() {
           <img src="../src/assets/logo.png" alt="" className="w-26 h-9" />
         </Link>
         <div
-          className={`flex rounded py-2.5 px-4 w-1/3 gap-4 items-center shadow-md hover:shadow-lg transition-all duration-300 border border-transparent hover:border-gray-200 ${
+          className={`flex rounded py-2.5 px-4 w-1/3 gap-4 items-center shadow-lg transition-all duration-300 border ${
             darkMode
-              ? "bg-dark-surface shadow-gray-800 hover:border-gray-700"
-              : "bg-white shadow-gray-200"
+              ? "bg-dark-surface shadow-gray-700 border-gray-700 border-opacity-50"
+              : "bg-white shadow-primary/20 border-primary border-opacity-30"
           }`}
+          ref={searchInputRef}
         >
           <button className="text-gray-400 hover:text-primary transition-colors duration-300">
             <svg
@@ -119,18 +179,19 @@ export default function Header() {
               />
             </svg>
           </button>
-          <div ref={searchInputRef} className="w-full">
+          <div className="w-full">
             <input
               type="text"
               placeholder="Search"
               value={searchQuery}
               onChange={handleSearchInputChange}
               className={`text-sm outline-none w-full transition-all duration-300 focus:font-medium ${
-                darkMode ? "bg-dark-surface text-dark-text" : "text-black"
+                darkMode
+                  ? "bg-dark-surface text-dark-text placeholder-gray-400"
+                  : "text-black placeholder-gray-500"
               }`}
             />
           </div>
-          {/* <div className='text-sm text-gray-300 font-semibold'>Search</div> */}
         </div>
 
         {/* Dark Mode Toggle Button */}
@@ -378,10 +439,24 @@ export default function Header() {
             <div className="hidden md:flex">
               <button
                 onClick={logout}
-                className="secondary hover:bg-red-100 hover:text-red-600 transition-colors duration-300"
+                disabled={isLoggingOut}
+                className={`secondary hover:bg-red-100 hover:text-red-600 transition-colors duration-300 relative ${
+                  isLoggingOut ? "opacity-70 cursor-not-allowed" : ""
+                }`}
               >
-                <div>Log out</div>
-                <RxExit />
+                {isLoggingOut ? (
+                  <>
+                    <div className="flex items-center">
+                      <div className="mr-2">Logging out</div>
+                      <div className="w-5 h-5 border-t-2 border-b-2 border-red-500 rounded-full animate-spin"></div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div>Log out</div>
+                    <RxExit />
+                  </>
+                )}
               </button>
             </div>
 
@@ -448,7 +523,7 @@ export default function Header() {
 
                   <Link
                     className={`flex py-2 pl-6 pr-8 rounded-lg transition-all duration-300 ${
-                      darkMode  
+                      darkMode
                         ? "hover:bg-gray-700 hover:text-primary"
                         : "hover:bg-gray-100 hover:text-primary hover:shadow"
                     }`}
@@ -463,13 +538,22 @@ export default function Header() {
                       darkMode
                         ? "hover:bg-red-900 hover:text-red-400"
                         : "hover:bg-red-100 hover:text-red-600 hover:shadow"
-                    }`}
+                    } ${isLoggingOut ? "opacity-70 cursor-not-allowed" : ""}`}
                     onClick={() => {
-                      setisMenuOpen(false);
-                      logout();
+                      if (!isLoggingOut) {
+                        setisMenuOpen(false);
+                        logout();
+                      }
                     }}
                   >
-                    Log out
+                    {isLoggingOut ? (
+                      <div className="flex items-center">
+                        <span className="mr-2">Logging out</span>
+                        <div className="w-4 h-4 border-t-2 border-b-2 border-red-500 rounded-full animate-spin"></div>
+                      </div>
+                    ) : (
+                      "Log out"
+                    )}
                   </Link>
                 </div>
               </div>

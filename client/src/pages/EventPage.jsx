@@ -81,10 +81,18 @@ export default function EventPage() {
     const allFeedback = JSON.parse(
       localStorage.getItem("eventFeedback") || "[]"
     );
+    console.log("All feedback in localStorage:", allFeedback);
+    console.log("Current event title:", event.title);
+
     // Filter feedback for this specific event
+    // Try both exact match and case-insensitive match
     const eventFeedback = allFeedback.filter(
-      (feedback) => feedback.event === event.title
+      (feedback) =>
+        feedback.event === event.title ||
+        feedback.event.toLowerCase() === event.title.toLowerCase()
     );
+
+    console.log("Filtered feedback for this event:", eventFeedback);
     setFeedbackList(eventFeedback);
     setLoadingFeedback(false);
     setShowFeedbackModal(true);
@@ -359,7 +367,7 @@ export default function EventPage() {
               darkMode ? "text-dark-primary" : "text-blue-700"
             }`}
           >
-            Organized By{" "}
+            Organized By:-{" "}
             <span className={darkMode ? "text-gray-300" : "text-gray-800"}>
               {event.organizedBy}
             </span>

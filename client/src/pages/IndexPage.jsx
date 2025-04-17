@@ -11,6 +11,8 @@ import {
   BsPeopleFill,
   BsBookmark,
   BsBookmarkFill,
+  BsPencilSquare,
+  BsTrash,
 } from "react-icons/bs";
 import { BiLike } from "react-icons/bi";
 
@@ -29,6 +31,45 @@ export default function IndexPage() {
     type: "info",
   });
   const [filteredBookmarks, setFilteredBookmarks] = useState([]);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [lastDeletedEvent, setLastDeletedEvent] = useState(null);
+
+  // Check if user is admin on component mount
+  useEffect(() => {
+    const checkAdminStatus = () => {
+      const userDataString = localStorage.getItem("user");
+      if (userDataString) {
+        try {
+          const userData = JSON.parse(userDataString);
+          setIsAdmin(userData?.role === "admin");
+        } catch (error) {
+          console.error("Error parsing user data:", error);
+          setIsAdmin(false);
+        }
+      } else {
+        setIsAdmin(false);
+      }
+    };
+
+    // Create a custom event listener for logout
+    const handleLogout = () => {
+      setBookmarkedEvents([]);
+      setFilteredBookmarks([]);
+      setShowOnlyBookmarked(false);
+      localStorage.removeItem("bookmarkedEvents");
+      localStorage.removeItem("showOnlyBookmarked");
+      setIsAdmin(false);
+    };
+
+    // Listen for custom logout event
+    window.addEventListener("app-logout", handleLogout);
+
+    checkAdminStatus();
+
+    return () => {
+      window.removeEventListener("app-logout", handleLogout);
+    };
+  }, []);
 
   // Helper function to check if an event is a past event
   const isPastEvent = (event) => {
@@ -57,7 +98,7 @@ export default function IndexPage() {
     return eventDate < currentDateTime;
   };
 
-  // Define CSS for bookmark animation
+  // Define CSS for animations
   useEffect(() => {
     // Create style element
     const style = document.createElement("style");
@@ -69,6 +110,45 @@ export default function IndexPage() {
       }
       .animate-bookmark-pulse {
         animation: bookmarkPulse 0.5s ease-in-out;
+      }
+      
+      @keyframes fadeInUp {
+        from { 
+          opacity: 0;
+          transform: translate(-50%, 20px);
+        }
+        to { 
+          opacity: 1;
+          transform: translate(-50%, 0);
+        }
+      }
+      .animate-fade-in-up {
+        animation: fadeInUp 0.3s ease-out forwards;
+      }
+      
+      @keyframes deleteToastShake {
+        0%, 100% { transform: translate(-50%, 0); }
+        10%, 30%, 50% { transform: translate(-52%, 0); }
+        20%, 40%, 60% { transform: translate(-48%, 0); }
+        70% { transform: translate(-50%, 0); }
+      }
+      
+      @keyframes pulseDelete {
+        0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.5); }
+        70% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+      }
+      
+      .toast-delete-animation {
+        animation: fadeInUp 0.3s ease-out forwards, deleteToastShake 0.5s ease-in-out 0.3s;
+      }
+      
+      .toast-delete-animation > div {
+        animation: pulseDelete 2s infinite;
+      }
+      
+      .undo-button-pulse {
+        animation: bookmarkPulse 1.5s ease-in-out infinite;
       }
     `;
     document.head.appendChild(style);
@@ -96,6 +176,29 @@ export default function IndexPage() {
         localStorage.removeItem("bookmarkedEvents");
       }
     }
+
+    // Check if user is logged in
+    const handleStorageChange = () => {
+      const userDataString = localStorage.getItem("user");
+      // If user isn't logged in, clear bookmarks
+      if (!userDataString) {
+        setBookmarkedEvents([]);
+        setFilteredBookmarks([]);
+        setShowOnlyBookmarked(false);
+        localStorage.removeItem("bookmarkedEvents");
+        localStorage.removeItem("showOnlyBookmarked");
+      }
+    };
+
+    // Listen for storage changes (logout clears localStorage)
+    window.addEventListener("storage", handleStorageChange);
+
+    // Also check on page refresh/load
+    handleStorageChange();
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, []);
 
   // Save bookmarked events to localStorage whenever they change
@@ -117,6 +220,20 @@ export default function IndexPage() {
   //! Fetch events from the server ---------------------------------------------------------------
   useEffect(() => {
     setLoading(true);
+
+    // Reset bookmark state if user is not logged in
+    const checkUserLoggedIn = () => {
+      const userDataString = localStorage.getItem("user");
+      if (!userDataString) {
+        setBookmarkedEvents([]);
+        setFilteredBookmarks([]);
+        setShowOnlyBookmarked(false);
+      }
+    };
+
+    // Check login status before fetching events
+    checkUserLoggedIn();
+
     axios
       .get("/createEvent")
       .then((response) => {
@@ -298,6 +415,7 @@ export default function IndexPage() {
 
         setLiveEvents(updateEvent(liveEvents));
         setPastEvents(updateEvent(pastEvents));
+        setEvents(updateEvent(events)); // Also update the main events array
         console.log("Liked event:", response);
       })
       .catch((error) => {
@@ -348,6 +466,56 @@ export default function IndexPage() {
     }
   };
 
+  //! Delete Event Functionality --------------------------------------------------------------
+  const handleDeleteEvent = (eventId) => {
+    // Find the event details before trying to delete
+    const eventToDelete = events.find((event) => event._id === eventId);
+    if (!eventToDelete) return;
+
+    const eventTitle = eventToDelete.title || "this event";
+
+    // Check if this event was bookmarked before deletion
+    const wasBookmarked = bookmarkedEvents.includes(eventId);
+
+    // Create a clean copy of the event data for the database restoration
+    // Remove properties that might cause issues when re-creating
+    const { _id, __v, createdAt, updatedAt, ...cleanEventData } = eventToDelete;
+    const eventDataForUndo = {
+      ...cleanEventData,
+      wasBookmarked,
+      originalId: _id, // Store original ID for reference
+    };
+
+    // Remove confirmation dialog and proceed directly with deletion
+    axios
+      .delete(`/createEvent/${eventId}`)
+      .then(() => {
+        // Remove event from all lists
+        setEvents(events.filter((event) => event._id !== eventId));
+        setLiveEvents(liveEvents.filter((event) => event._id !== eventId));
+        setPastEvents(pastEvents.filter((event) => event._id !== eventId));
+
+        // Also remove from bookmarks if it exists there
+        if (bookmarkedEvents.includes(eventId)) {
+          const updatedBookmarks = bookmarkedEvents.filter(
+            (id) => id !== eventId
+          );
+          setBookmarkedEvents(updatedBookmarks);
+          localStorage.setItem(
+            "bookmarkedEvents",
+            JSON.stringify(updatedBookmarks)
+          );
+        }
+
+        // Use the special delete toast with event data for potential recovery
+        showDeleteToast(eventTitle, eventDataForUndo);
+      })
+      .catch((error) => {
+        console.error("Error deleting event:", error);
+        showToast("Failed to delete event. Please try again.", "error");
+      });
+  };
+
   // Simple toast notification handler (visual feedback)
   const showToast = (message, type = "info") => {
     setToast({ visible: true, message, type });
@@ -356,6 +524,101 @@ export default function IndexPage() {
     setTimeout(() => {
       setToast({ visible: false, message: "", type: "info" });
     }, 3000);
+  };
+
+  // Special toast for delete operations with more emphasis
+  const showDeleteToast = (eventTitle, eventData = null) => {
+    // Store the deleted event data for potential recovery
+    if (eventData) {
+      setLastDeletedEvent(eventData);
+    }
+
+    setToast({
+      visible: true,
+      message: `"${eventTitle}" has been deleted`,
+      type: "delete",
+      showUndo: true,
+    });
+
+    // Hide after 5 seconds (longer display to allow for undo)
+    setTimeout(() => {
+      setToast({ visible: false, message: "", type: "info", showUndo: false });
+      // Clear the last deleted event data after the toast is gone
+      setLastDeletedEvent(null);
+    }, 5000);
+  };
+
+  // Undo delete function
+  const handleUndoDelete = () => {
+    if (!lastDeletedEvent) return;
+
+    // Show a temporary "restoring" toast
+    showToast("Restoring event...", "info");
+
+    // Create a new FormData object to handle the event restoration
+    const formData = new FormData();
+
+    // Add all fields from lastDeletedEvent to the FormData
+    Object.keys(lastDeletedEvent).forEach((key) => {
+      // Skip image field - we'll handle it specially
+      if (key !== "image" && key !== "wasBookmarked" && key !== "originalId") {
+        formData.append(key, lastDeletedEvent[key]);
+      }
+    });
+
+    // If we have an image path, we need to tell the server to keep using this path
+    if (lastDeletedEvent.image) {
+      // Add a special field to indicate this is a restore operation with an existing image
+      formData.append("existingImage", lastDeletedEvent.image);
+    }
+
+    // We need to re-create the event in the database
+    axios
+      .post("/createEvent", formData)
+      .then((response) => {
+        // Get the newly created event with its new ID
+        const restoredEvent = response.data;
+
+        // Add the event back to the lists with the NEW ID
+        setEvents((prev) => [...prev, restoredEvent]);
+
+        // Determine if it should go to live or past events
+        if (isPastEvent(restoredEvent)) {
+          setPastEvents((prev) => [...prev, restoredEvent]);
+        } else {
+          setLiveEvents((prev) => [...prev, restoredEvent]);
+        }
+
+        // If it was bookmarked, restore the bookmark with the new ID
+        if (lastDeletedEvent.wasBookmarked) {
+          const updatedBookmarks = [...bookmarkedEvents, restoredEvent._id];
+          setBookmarkedEvents(updatedBookmarks);
+          localStorage.setItem(
+            "bookmarkedEvents",
+            JSON.stringify(updatedBookmarks)
+          );
+        }
+
+        // Show confirmation toast
+        showToast(
+          `"${restoredEvent.title}" has been restored successfully`,
+          "success"
+        );
+      })
+      .catch((error) => {
+        console.error("Error restoring event:", error);
+        showToast("Failed to restore event. Please try again.", "error");
+      })
+      .finally(() => {
+        // Clear the toast and last deleted event
+        setToast({
+          visible: false,
+          message: "",
+          type: "info",
+          showUndo: false,
+        });
+        setLastDeletedEvent(null);
+      });
   };
 
   // Event card component for reuse
@@ -455,6 +718,33 @@ export default function IndexPage() {
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
           <div className="absolute top-4 right-4 flex items-center gap-3">
+            {isAdmin && (
+              <>
+                <div className="flex flex-col items-center">
+                  <Link
+                    to={`/edit-event/${event._id}`}
+                    className="p-2 bg-blue-500/90 rounded-full shadow-md text-white transition-colors hover:bg-blue-600 mb-1"
+                    title="Edit Event"
+                  >
+                    <BsPencilSquare className="w-5 h-5" />
+                  </Link>
+                </div>
+                <div className="flex flex-col items-center">
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleDeleteEvent(event._id);
+                    }}
+                    className="p-2 bg-red-500/90 rounded-full shadow-md text-white transition-colors hover:bg-red-600 hover:scale-105 mb-1"
+                    title="Delete Event (No confirmation)"
+                  >
+                    <BsTrash className="w-5 h-5" />
+                  </button>
+                </div>
+              </>
+            )}
+
             <div className="flex flex-col items-center">
               <button
                 onClick={() => handleLike(event._id)}
@@ -463,9 +753,6 @@ export default function IndexPage() {
                 <BiLike className="w-5 h-5" />
                 <span className="text-sm font-medium">{event?.likes}</span>
               </button>
-              {/* <span className="text-xs text-white font-medium drop-shadow-md">
-                Like
-              </span> */}
             </div>
 
             {/* Only show bookmark button for non-past events */}
@@ -491,9 +778,6 @@ export default function IndexPage() {
                     <BsBookmark className="w-5 h-5" />
                   )}
                 </button>
-                {/* <span className="text-xs text-white font-medium drop-shadow-md">
-                  {isBookmarked ? "Saved" : "Save"}
-                </span> */}
               </div>
             )}
           </div>
@@ -716,19 +1000,27 @@ export default function IndexPage() {
     >
       {/* Toast Notification */}
       {toast.visible && (
-        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
+        <div
+          className={`fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 ${
+            toast.type === "delete"
+              ? "toast-delete-animation"
+              : "animate-fade-in-up"
+          }`}
+        >
           <div
-            className={`px-4 py-3 rounded-lg shadow-lg flex items-center ${
+            className={`px-4 py-3 rounded-lg shadow-lg flex items-center transition-all duration-300 ${
               toast.type === "success"
                 ? "bg-green-500 text-white"
                 : toast.type === "error"
                 ? "bg-red-500 text-white"
+                : toast.type === "delete"
+                ? "bg-purple-600 text-white border-l-4 border-red-500"
                 : "bg-blue-500 text-white"
             }`}
           >
             {toast.type === "success" && (
               <svg
-                className="w-5 h-5 mr-2"
+                className="w-5 h-5 mr-2 animate-pulse"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -744,7 +1036,7 @@ export default function IndexPage() {
             )}
             {toast.type === "error" && (
               <svg
-                className="w-5 h-5 mr-2"
+                className="w-5 h-5 mr-2 animate-pulse"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -758,9 +1050,30 @@ export default function IndexPage() {
                 ></path>
               </svg>
             )}
+            {toast.type === "delete" && (
+              <div className="relative">
+                <svg
+                  className="w-6 h-6 mr-3 animate-pulse"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  ></path>
+                </svg>
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                  !
+                </span>
+              </div>
+            )}
             {toast.type === "info" && (
               <svg
-                className="w-5 h-5 mr-2"
+                className="w-5 h-5 mr-2 animate-pulse"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -774,7 +1087,24 @@ export default function IndexPage() {
                 ></path>
               </svg>
             )}
-            <span>{toast.message}</span>
+            <div className="flex justify-between items-center w-full">
+              <span
+                className={`font-medium ${
+                  toast.type === "delete" ? "text-lg" : ""
+                }`}
+              >
+                {toast.message}
+              </span>
+
+              {toast.showUndo && (
+                <button
+                  onClick={handleUndoDelete}
+                  className="ml-4 px-2 py-1 bg-white text-purple-600 text-sm font-bold rounded hover:bg-gray-100 transition-colors undo-button-pulse"
+                >
+                  UNDO
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -845,11 +1175,11 @@ export default function IndexPage() {
 
       {!loading && liveEvents.length === 0 && pastEvents.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20">
-          <img
+          {/* <img
             src="../src/assets/no-events.svg"
             alt="No events"
             className="w-40 h-40 mb-4 opacity-60"
-          />
+          /> */}
           <h3
             className={`text-xl font-medium mb-2 ${
               darkMode ? "text-gray-300" : "text-gray-700"

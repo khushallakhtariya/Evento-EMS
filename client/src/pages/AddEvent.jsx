@@ -4,10 +4,12 @@ import { UserContext } from "../UserContext";
 import { ThemeContext } from "../ThemeContext";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router-dom";
 
 export default function AddEvent() {
   const { user } = useContext(UserContext);
   const { darkMode } = useContext(ThemeContext);
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     owner: user ? user.name : "",
     title: "",
@@ -196,6 +198,12 @@ export default function AddEvent() {
           progress: undefined,
           theme: darkMode ? "dark" : "light",
         });
+
+        // Wait for 3 seconds before navigating to home
+        setTimeout(() => {
+          navigate("/");
+        }, 3000);
+
         // Reset form data after successful submission
         setFormData({
           owner: user ? user.name : "",

@@ -12,6 +12,7 @@ import UserAccountPage from "./pages/UserAccountPage";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import AddEvent from "./pages/AddEvent";
+import EditEvent from "./pages/EditEvent";
 import EventPage from "./pages/EventPage";
 import CalendarView from "./pages/CalendarView";
 import OrderSummary from "./pages/OrderSummary";
@@ -35,6 +36,7 @@ function App() {
             <Route index element={<IndexPage />} />
             <Route path="/useraccount" element={<UserAccountPage />} />
             <Route path="/createEvent" element={<AddEvent />} />
+            <Route path="/edit-event/:id" element={<EditEvent />} />
             <Route path="/event/:id" element={<EventPage />} />
             <Route path="/calendar" element={<CalendarView />} />
             <Route path="/wallet" element={<TicketPage />} />

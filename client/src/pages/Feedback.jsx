@@ -3,29 +3,56 @@ import FeedbackList from "./FeedbackList"; // Import the new component
 import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
 import { ThemeContext } from "../ThemeContext"; // Import ThemeContext
 import { UserContext } from "../UserContext"; // Import UserContext
+import axios from "axios"; // Import axios for API calls
 
 const Feedback = () => {
   const navigate = useNavigate(); // Initialize navigate for routing
   const { darkMode, toggleDarkMode } = useContext(ThemeContext); // Get darkMode and toggleDarkMode from context
   const { user } = useContext(UserContext); // Get user from UserContext
-  // Predefined list of past and present events
-  const eventOptions = [
-    { id: 1, name: "Annual Tech Conference 2023", status: "past" },
-    { id: 2, name: "Music Festival Summer Edition", status: "past" },
-    { id: 3, name: "Web Development Workshop", status: "present" },
-    { id: 4, name: "Startup Networking Event", status: "present" },
-    { id: 5, name: "Product Launch Party", status: "present" },
-    { id: 6, name: "Design Thinking Seminar", status: "past" },
-    { id: 7, name: "AI & ML Conference", status: "present" },
-    { id: 8, name: "Hackathon Challenge", status: "present" },
-    { id: 9, name: "Digital Marketing Summit", status: "present" },
-    { id: 10, name: "Blockchain Technology Expo", status: "past" },
-    { id: 11, name: "Mobile App Development Workshop", status: "present" },
-    { id: 12, name: "Virtual Reality Gaming Convention", status: "present" },
-    { id: 13, name: "Data Science Symposium", status: "past" },
-    { id: 14, name: "Cybersecurity Forum", status: "present" },
-    { id: 15, name: "E-commerce Strategy Conference", status: "present" },
-  ];
+  const [isUserAdmin, setIsUserAdmin] = useState(false); // Track admin status
+  const [eventOptions, setEventOptions] = useState([]); // State for events from backend
+  const [loading, setLoading] = useState(true); // Loading state
+
+  useEffect(() => {
+    // Check if user is admin from context
+    if (user && user.role === "admin") {
+      setIsUserAdmin(true);
+    }
+    // Try from localStorage if not in context
+    else {
+      try {
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          if (parsedUser && parsedUser.role === "admin") {
+            setIsUserAdmin(true);
+          }
+        }
+      } catch (error) {
+        console.error("Error parsing user from localStorage:", error);
+      }
+    }
+  }, [user]);
+
+  // Fetch events from the backend
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(
+          "http://localhost:4000/events/for-feedback"
+        );
+        console.log("Event options from API:", response.data);
+        setEventOptions(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, []);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -56,11 +83,18 @@ const Feedback = () => {
   const ratingRef = useRef(null);
   const submitRef = useRef(null);
 
+  // Fetch feedback from the backend
   useEffect(() => {
-    const savedFeedback = localStorage.getItem("eventFeedback");
-    if (savedFeedback) {
-      setFeedbackList(JSON.parse(savedFeedback));
-    }
+    const fetchFeedback = async () => {
+      try {
+        const response = await axios.get("http://localhost:4000/feedback");
+        setFeedbackList(response.data);
+      } catch (error) {
+        console.error("Error fetching feedback:", error);
+      }
+    };
+
+    fetchFeedback();
   }, []);
 
   // Auto-dismiss toast
@@ -191,7 +225,7 @@ const Feedback = () => {
     return true;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Validate all fields before submission
@@ -205,30 +239,59 @@ const Feedback = () => {
     const finalEventName =
       formData.event === "custom" ? formData.customEvent : formData.event;
 
-    setTimeout(() => {
-      const newFeedback = {
+    try {
+      // Send feedback to the backend
+      const feedbackData = {
         ...formData,
-        // Override event with the proper name
         event: finalEventName,
-        id: Date.now(),
-        date: new Date().toLocaleDateString(),
       };
-      const updatedFeedbackList = [...feedbackList, newFeedback];
-      setFeedbackList(updatedFeedbackList);
-      localStorage.setItem(
-        "eventFeedback",
-        JSON.stringify(updatedFeedbackList)
+
+      const response = await axios.post(
+        "http://localhost:4000/feedback",
+        feedbackData
       );
-      setFormData({
-        name: "",
-        email: "",
-        event: "",
-        customEvent: "",
-        message: "",
-        rating: 0,
-      });
-      setShowCustomEvent(false);
-      setSubmitting(false);
+
+      // Add the new feedback to the list
+      setFeedbackList([response.data, ...feedbackList]);
+
+      // Save to localStorage for EventPage's view feedback feature
+      const today = new Date();
+      const formattedDate = today.toISOString().split("T")[0]; // Format: YYYY-MM-DD
+
+      // Get the selected event object if not using custom event
+      const selectedEvent =
+        formData.event !== "custom"
+          ? eventOptions.find((event) => event.name === formData.event)
+          : null;
+
+      // Create the feedback to save in localStorage
+      // This needs to match what EventPage.jsx expects
+      const localFeedback = {
+        name: formData.name,
+        // EventPage.jsx filters by event.title, so we need to use the right property
+        // If we have a selected event with title, use that; otherwise use the name directly
+        event: selectedEvent?.title || finalEventName,
+        message: formData.message,
+        rating: formData.rating,
+        date: formattedDate,
+      };
+
+      console.log("Selected event:", selectedEvent);
+      console.log(
+        "Event name being saved to localStorage:",
+        localFeedback.event
+      );
+
+      // Get existing feedback from localStorage
+      const existingFeedback = JSON.parse(
+        localStorage.getItem("eventFeedback") || "[]"
+      );
+
+      // Add new feedback
+      existingFeedback.push(localFeedback);
+
+      // Save back to localStorage
+      localStorage.setItem("eventFeedback", JSON.stringify(existingFeedback));
 
       // Show success toast
       setToast({
@@ -237,22 +300,89 @@ const Feedback = () => {
         type: "success",
       });
 
-      // Focus back to the first field for a new entry
-      nameRef.current?.focus();
-    }, 600);
+      // Just reset the form without any redirects
+      resetForm();
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+
+      setSubmitting(false);
+      setToast({
+        visible: true,
+        message: "Failed to submit feedback. Please try again.",
+        type: "error",
+      });
+    }
   };
 
-  const handleDelete = (index) => {
-    const updatedFeedbackList = feedbackList.filter((_, i) => i !== index);
-    setFeedbackList(updatedFeedbackList);
-    localStorage.setItem("eventFeedback", JSON.stringify(updatedFeedbackList));
-
-    // Show delete toast
-    setToast({
-      visible: true,
-      message: "Feedback has been deleted",
-      type: "error",
+  // Helper function to reset form
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      email: "",
+      event: "",
+      customEvent: "",
+      message: "",
+      rating: 0,
     });
+    setShowCustomEvent(false);
+    setSubmitting(false);
+    // Focus back to the first field for a new entry
+    nameRef.current?.focus();
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`http://localhost:4000/feedback/${id}`);
+
+      // Get the feedback that's being deleted to match with localStorage
+      const feedbackToDelete = feedbackList.find(
+        (feedback) => feedback._id === id
+      );
+
+      // Remove from state
+      const updatedFeedbackList = feedbackList.filter(
+        (feedback) => feedback._id !== id
+      );
+      setFeedbackList(updatedFeedbackList);
+
+      // Also remove from localStorage if it exists there
+      if (feedbackToDelete) {
+        // Get existing feedback
+        const storedFeedback = JSON.parse(
+          localStorage.getItem("eventFeedback") || "[]"
+        );
+
+        // Filter out the deleted feedback (match by name, event and message)
+        const updatedStoredFeedback = storedFeedback.filter(
+          (item) =>
+            !(
+              item.name === feedbackToDelete.name &&
+              item.event === feedbackToDelete.event &&
+              item.message === feedbackToDelete.message
+            )
+        );
+
+        // Save back to localStorage
+        localStorage.setItem(
+          "eventFeedback",
+          JSON.stringify(updatedStoredFeedback)
+        );
+      }
+
+      // Show delete toast
+      setToast({
+        visible: true,
+        message: "Feedback has been deleted",
+        type: "error",
+      });
+    } catch (error) {
+      console.error("Error deleting feedback:", error);
+      setToast({
+        visible: true,
+        message: "Failed to delete feedback",
+        type: "error",
+      });
+    }
   };
 
   const toastStyles = {
@@ -582,36 +712,68 @@ const Feedback = () => {
                 </button>
               </div>
 
-              <select
-                id="event"
-                name="event"
-                ref={eventRef}
-                value={formData.event}
-                onChange={handleChange}
-                onKeyDown={(e) =>
-                  handleKeyDown(
-                    e,
-                    showCustomEvent ? customEventRef : messageRef
-                  )
-                }
-                className={`mt-1 block w-full px-4 py-2 border ${
-                  errors.event
-                    ? "border-red-500"
-                    : darkMode
-                    ? "border-gray-600"
-                    : "border-gray-300"
-                } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all duration-200 ${
-                  darkMode ? "bg-gray-600 text-white" : "bg-white text-gray-900"
-                }`}
-              >
-                <option value="">Select an event</option>
-                {filteredEvents.map((event) => (
-                  <option key={event.id} value={event.name}>
-                    {event.name}
-                  </option>
-                ))}
-                <option value="custom">Other (not listed)</option>
-              </select>
+              {loading ? (
+                <div
+                  className={`flex items-center justify-center py-4 ${
+                    darkMode ? "text-gray-300" : "text-gray-600"
+                  }`}
+                >
+                  <svg
+                    className="animate-spin -ml-1 mr-3 h-5 w-5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Loading events...
+                </div>
+              ) : (
+                <select
+                  id="event"
+                  name="event"
+                  ref={eventRef}
+                  value={formData.event}
+                  onChange={handleChange}
+                  onKeyDown={(e) =>
+                    handleKeyDown(
+                      e,
+                      showCustomEvent ? customEventRef : messageRef
+                    )
+                  }
+                  className={`mt-1 block w-full px-4 py-2 border ${
+                    errors.event
+                      ? "border-red-500"
+                      : darkMode
+                      ? "border-gray-600"
+                      : "border-gray-300"
+                  } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all duration-200 ${
+                    darkMode
+                      ? "bg-gray-600 text-white"
+                      : "bg-white text-gray-900"
+                  }`}
+                >
+                  <option value="">Select an event</option>
+                  {filteredEvents.map((event) => (
+                    <option key={event.id} value={event.name}>
+                      {event.name}
+                    </option>
+                  ))}
+                  <option value="custom">Other (not listed)</option>
+                </select>
+              )}
               {errors.event && (
                 <p className="mt-1 text-sm text-red-500">{errors.event}</p>
               )}
@@ -816,11 +978,11 @@ const Feedback = () => {
         </div>
 
         {/* Feedback Display */}
-        {console.log("Passing feedbackList to FeedbackList:", feedbackList)}
         <FeedbackList
           feedbackList={feedbackList}
           handleDelete={handleDelete}
           darkMode={darkMode}
+          userIsAdmin={isUserAdmin}
         />
       </div>
     </>
