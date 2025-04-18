@@ -12,6 +12,17 @@ export default function TicketPage() {
   const [error, setError] = useState(null);
   const [activeTickets, setActiveTickets] = useState([]);
   const [expiredTickets, setExpiredTickets] = useState([]);
+  const [initialLoading, setInitialLoading] = useState(true);
+
+  useEffect(() => {
+    // Initial loading effect
+    const timer = setTimeout(() => {
+      setInitialLoading(false);
+    }, 1000);
+
+    // Cleanup timeout
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -166,87 +177,98 @@ export default function TicketPage() {
 
   return (
     <div className="flex flex-col flex-grow dark:bg-gray-900 dark:text-white">
-      <div className="mb-5 flex justify-between place-items-center">
-        <div>
-          <Link to="/">
-            <button
-              className="
-                inline-flex 
-                mt-12
-                gap-2
-                p-3 
-                ml-12
-                bg-gray-100
-                dark:bg-gray-800
-                justify-center 
-                items-center 
-                text-blue-700
-                dark:text-blue-400
-                font-bold
-                rounded-md
-                transition-colors"
-            >
-              <IoMdArrowBack
-                className="
-              font-bold
-              w-6
-              h-6
-              gap-2"
-              />
-              Back
-            </button>
-            <div className="text-center">
-              <Link to="/wallet"></Link>
-            </div>
-          </Link>
-        </div>
-      </div>
-
-      {loading && user ? (
-        <div className="mx-12 flex flex-col items-center justify-center mt-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-700 dark:border-blue-400"></div>
+      {initialLoading ? (
+        <div className="flex flex-col items-center justify-center h-screen">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-700 dark:border-blue-400"></div>
           <p className="text-xl font-semibold mt-4 dark:text-gray-200">
-            Loading tickets...
+            Loading Your Tickets...
           </p>
         </div>
-      ) : error ? (
-        <p className="mx-12 text-red-600 dark:text-red-400 text-xl text-center font-semibold mt-12">
-          {error}
-        </p>
-      ) : userTickets.length === 0 ? (
-        <p className="mx-12 text-xl text-center font-semibold mt-12 dark:text-gray-200">
-          You don't have any tickets yet. Please browse events and purchase
-          tickets to see them here.
-        </p>
       ) : (
         <>
-          {/* Active Tickets Section */}
-          {activeTickets.length > 0 && (
-            <div className="mx-12 mb-8">
-              <h2 className="text-2xl font-bold mb-4 dark:text-blue-400">
-                Active Tickets
-              </h2>
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-                {activeTickets.map(renderTicket)}
-              </div>
+          <div className="mb-5 flex justify-between place-items-center">
+            <div>
+              <Link to="/">
+                <button
+                  className="
+                    inline-flex 
+                    mt-12
+                    gap-2
+                    p-3 
+                    ml-12
+                    bg-gray-100
+                    dark:bg-gray-800
+                    justify-center 
+                    items-center 
+                    text-blue-700
+                    dark:text-blue-400
+                    font-bold
+                    rounded-md
+                    transition-colors"
+                >
+                  <IoMdArrowBack
+                    className="
+                  font-bold
+                  w-6
+                  h-6
+                  gap-2"
+                  />
+                  Back
+                </button>
+                <div className="text-center">
+                  <Link to="/wallet"></Link>
+                </div>
+              </Link>
             </div>
-          )}
+          </div>
 
-          {/* Expired Tickets Section */}
-          {expiredTickets.length > 0 && (
-            <div className="mx-12 mt-4">
-              <h2 className="text-2xl font-bold mb-4 dark:text-gray-400">
-                Expired Tickets
-              </h2>
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-                {expiredTickets.map((ticket) => (
-                  <div key={ticket._id} className="opacity-70 relative">
-                    <div className="absolute inset-0 bg-gray-800 bg-opacity-10 dark:bg-opacity-30 z-10 rounded-md"></div>
-                    {renderTicket(ticket)}
-                  </div>
-                ))}
-              </div>
+          {loading && user ? (
+            <div className="mx-12 flex flex-col items-center justify-center mt-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-700 dark:border-blue-400"></div>
+              <p className="text-xl font-semibold mt-4 dark:text-gray-200">
+                Loading tickets...
+              </p>
             </div>
+          ) : error ? (
+            <p className="mx-12 text-red-600 dark:text-red-400 text-xl text-center font-semibold mt-12">
+              {error}
+            </p>
+          ) : userTickets.length === 0 ? (
+            <p className="mx-12 text-xl text-center font-semibold mt-12 dark:text-gray-200">
+              You don't have any tickets yet. Please browse events and purchase
+              tickets to see them here.
+            </p>
+          ) : (
+            <>
+              {/* Active Tickets Section */}
+              {activeTickets.length > 0 && (
+                <div className="mx-12 mb-8">
+                  <h2 className="text-2xl font-bold mb-4 dark:text-blue-400">
+                    Active Tickets
+                  </h2>
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+                    {activeTickets.map(renderTicket)}
+                  </div>
+                </div>
+              )}
+
+              {/* Expired Tickets Section */}
+              {expiredTickets.length > 0 && (
+                <div className="mx-12 mt-4">
+                  <h2 className="text-2xl font-bold mb-4 dark:text-gray-400">
+                    Expired Tickets
+                  </h2>
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+                    {expiredTickets.map((ticket) => (
+                      <div key={ticket._id} className="opacity-70 relative">
+                        <div className="absolute inset-0 bg-gray-800 bg-opacity-10 dark:bg-opacity-30 z-10 rounded-md"></div>
+                        {renderTicket(ticket)}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </>
       )}

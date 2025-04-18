@@ -17,6 +17,7 @@ export default function PaymentSummary() {
     email: "",
     contactNo: "",
   });
+  const [isProcessing, setIsProcessing] = useState(false);
   //!Adding a default state for ticket-----------------------------
   const defaultTicketState = {
     userid: user ? user._id : "",
@@ -220,7 +221,13 @@ export default function PaymentSummary() {
       return;
     }
 
+    // Show loading state
+    setIsProcessing(true);
+
     try {
+      // Wait for 2 seconds to simulate processing
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
       const updatedTicketDetails = {
         ...ticketDetails,
         ticketDetails: {
@@ -248,6 +255,8 @@ export default function PaymentSummary() {
         position: "top-right",
         autoClose: 3000,
       });
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -266,6 +275,9 @@ export default function PaymentSummary() {
       });
       return;
     }
+
+    // Show loading state
+    setIsProcessing(true);
 
     // Use toast instead of alert for confirmation
     toast.info(
@@ -302,6 +314,7 @@ export default function PaymentSummary() {
           axios
             .post(`/tickets`, updatedTicketDetails)
             .then(() => {
+              setIsProcessing(false);
               setRedirect(true);
             })
             .catch((error) => {
@@ -310,6 +323,7 @@ export default function PaymentSummary() {
                 position: "top-right",
                 autoClose: 3000,
               });
+              setIsProcessing(false);
             });
         });
       }, 2000);
@@ -344,6 +358,24 @@ export default function PaymentSummary() {
   return (
     <div className="bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 min-h-screen pb-12">
       <ToastContainer />
+      {isProcessing && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl flex flex-col items-center max-w-md mx-auto transform transition-all duration-300 scale-in">
+            <div className="relative">
+              <div className="animate-spin rounded-full h-20 w-20 border-4 border-blue-100 dark:border-blue-900 border-t-4 border-t-blue-700 dark:border-t-blue-400"></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="h-12 w-12 rounded-full bg-blue-50 dark:bg-blue-900/30"></div>
+              </div>
+            </div>
+            <p className="text-xl font-semibold mt-4 dark:text-gray-200 text-center">
+              Processing Payment...
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 text-center">
+              Please wait while we secure your transaction
+            </p>
+          </div>
+        </div>
+      )}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         <Link to={"/event/" + event._id + "/ordersummary"}>
           <button className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 shadow rounded-lg text-blue-600 dark:text-blue-400 font-medium hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200">
@@ -616,9 +648,16 @@ export default function PaymentSummary() {
                             <button
                               type="button"
                               onClick={handleUpiPayment}
-                              className="w-full py-3 bg-green-600 dark:bg-green-700 text-white font-medium rounded-lg hover:bg-green-700 dark:hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-offset-gray-800 transition-colors duration-200 shadow-sm"
+                              disabled={isProcessing}
+                              className={`w-full py-3 bg-green-600 dark:bg-green-700 text-white font-medium rounded-lg hover:bg-green-700 dark:hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-offset-gray-800 transition-colors duration-200 shadow-sm ${
+                                isProcessing
+                                  ? "opacity-70 cursor-not-allowed"
+                                  : ""
+                              }`}
                             >
-                              Pay with UPI (MRP {event.ticketPrice})
+                              {isProcessing
+                                ? "Processing..."
+                                : `Pay with UPI (MRP ${event.ticketPrice})`}
                             </button>
                           </div>
                         </div>
@@ -637,9 +676,14 @@ export default function PaymentSummary() {
                           <button
                             type="button"
                             onClick={createTicket}
-                            className="inline-flex justify-center items-center px-8 py-4 bg-blue-600 dark:bg-blue-700 text-white font-medium rounded-lg hover:bg-blue-700 dark:hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-colors duration-200 shadow-md"
+                            disabled={isProcessing}
+                            className={`inline-flex justify-center items-center px-8 py-4 bg-blue-600 dark:bg-blue-700 text-white font-medium rounded-lg hover:bg-blue-700 dark:hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-colors duration-200 shadow-md ${
+                              isProcessing
+                                ? "opacity-70 cursor-not-allowed"
+                                : ""
+                            }`}
                           >
-                            Make Payment
+                            {isProcessing ? "Processing..." : "Make Payment"}
                           </button>
                         )}
                       </div>
@@ -781,6 +825,22 @@ export default function PaymentSummary() {
           </div>
         </div>
       </div>
+      <style jsx>{`
+        @keyframes scaleIn {
+          from {
+            opacity: 0;
+            transform: scale(0.9);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+
+        .scale-in {
+          animation: scaleIn 0.3s ease-out forwards;
+        }
+      `}</style>
     </div>
   );
 }

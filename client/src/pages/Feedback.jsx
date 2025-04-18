@@ -12,6 +12,16 @@ const Feedback = () => {
   const [isUserAdmin, setIsUserAdmin] = useState(false); // Track admin status
   const [eventOptions, setEventOptions] = useState([]); // State for events from backend
   const [loading, setLoading] = useState(true); // Loading state
+  const [pageLoading, setPageLoading] = useState(true); // Initial page loading state
+
+  // Show page loader for 1 second
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPageLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     // Check if user is admin from context
@@ -531,6 +541,18 @@ const Feedback = () => {
 
   return (
     <>
+      {/* Page Loading Spinner */}
+      {pageLoading && (
+        <div className="min-h-screen w-full flex items-center justify-center">
+          <div className="flex flex-col items-center justify-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-700 dark:border-blue-400"></div>
+            <p className="text-xl font-semibold mt-4 dark:text-gray-200">
+              Loading Your Feedback...
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Toast Container - Completely separate from the main layout */}
       {toast.visible && (
         <div style={toastStyles.overlay}>
@@ -546,7 +568,9 @@ const Feedback = () => {
       <div
         className={`w-full p-8 ${
           darkMode ? "bg-gray-800" : "bg-gray-100"
-        } shadow-lg rounded-lg flex flex-col lg:flex-row space-y-8 lg:space-y-0 lg:space-x-8 transition-all duration-500 relative min-h-screen`}
+        } shadow-lg rounded-lg flex flex-col lg:flex-row space-y-8 lg:space-y-0 lg:space-x-8 transition-all duration-500 relative min-h-screen ${
+          pageLoading ? "hidden" : ""
+        }`}
       >
         {/* Feedback Form */}
         <div

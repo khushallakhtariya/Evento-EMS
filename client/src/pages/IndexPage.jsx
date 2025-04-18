@@ -34,6 +34,17 @@ export default function IndexPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [lastDeletedEvent, setLastDeletedEvent] = useState(null);
 
+  // Ensure loader displays for at least 2 seconds on page load/refresh
+  useEffect(() => {
+    setLoading(true);
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+
+    // Clean up timer if component unmounts
+    return () => clearTimeout(timer);
+  }, []);
+
   // Check if user is admin on component mount
   useEffect(() => {
     const checkAdminStatus = () => {
@@ -219,7 +230,7 @@ export default function IndexPage() {
 
   //! Fetch events from the server ---------------------------------------------------------------
   useEffect(() => {
-    setLoading(true);
+    // Note: not setting loading=true here, as it's handled by the 2-second timer
 
     // Reset bookmark state if user is not logged in
     const checkUserLoggedIn = () => {
@@ -280,10 +291,8 @@ export default function IndexPage() {
       })
       .catch((error) => {
         console.error("Error fetching events:", error);
-      })
-      .finally(() => {
-        setLoading(false);
       });
+    // Note: removed the setLoading(false) here since it's handled by the timer
   }, []);
 
   // Filter bookmarked events when events or bookmarks change
@@ -972,7 +981,9 @@ export default function IndexPage() {
             <Link to={"/event/" + event._id} className="block">
               <button
                 className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-lg font-medium ${
-                  darkMode ? "bg-gray-600 text-white" : "bg-gray-500 text-white"
+                  darkMode
+                    ? "bg-gray-600 text-white hover:bg-gray-700"
+                    : "bg-gray-500 text-white hover:bg-gray-600"
                 }`}
               >
                 View Details
@@ -1109,252 +1120,259 @@ export default function IndexPage() {
         </div>
       )}
 
-      {/* Hero section with improved styling */}
-      <div className="w-full px-4 sm:px-6 mb-8">
-        <div className="relative w-full h-60 sm:h-80 md:h-96 overflow-hidden rounded-xl shadow-lg">
-          <img
-            src="../src/assets/pexels-pixabay-433452.jpg"
-            alt="Event Hero"
-            className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end pb-8 px-6">
-            {/* Date display */}
-            <div className="absolute top-4 right-6">
-              <div className=" backdrop-blur-md px-5 py-3 rounded-lg shadow-lg border-l-4 border-blue-500 transform transition-transform duration-300 hover:scale-105">
-                <p className="text-gray-800 font-semibold">
-                  {new Date().toLocaleDateString("en-US", {
-                    weekday: "long",
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </p>
-              </div>
-            </div>
-
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-              Discover Amazing Events
-            </h1>
-            <p className="text-white text-lg opacity-90 mb-4">
-              Find and book tickets for the best events near you
-            </p>
-
-            {/* Filter Toggle Button */}
-            {bookmarkedEvents.length > 0 && (
-              <div className="flex">
-                <button
-                  onClick={() => {
-                    const newState = !showOnlyBookmarked;
-                    setShowOnlyBookmarked(newState);
-                    // Store this preference in localStorage
-                    localStorage.setItem("showOnlyBookmarked", newState);
-                  }}
-                  className={`flex items-center gap-2 py-2 px-4 rounded-lg transition-colors ${
-                    showOnlyBookmarked
-                      ? "bg-yellow-500 text-white"
-                      : "bg-white/80 text-gray-800 hover:bg-white"
-                  }`}
-                >
-                  {showOnlyBookmarked ? (
-                    <BsBookmarkFill className="w-4 h-4" />
-                  ) : (
-                    <BsBookmark className="w-4 h-4" />
-                  )}
-                  <span className="font-medium">
-                    {showOnlyBookmarked
-                      ? "Showing Bookmarked Events"
-                      : `Show Only Bookmarked Events${
-                          filteredBookmarks.length > 0
-                            ? ` (${filteredBookmarks.length})`
-                            : ""
-                        }`}
-                  </span>
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
       {/* Loading state */}
-      {loading && (
-        <div className="flex justify-center items-center py-20">
+      {loading ? (
+        <div className="flex flex-col justify-center items-center h-screen fixed top-0 left-0 right-0 bottom-0 z-50 bg-opacity-70 bg-gray-900">
           <div
-            className={`animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 ${
+            className={`animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 ${
               darkMode ? "border-dark-primary" : "border-blue-500"
             }`}
           ></div>
-        </div>
-      )}
-
-      {!loading && liveEvents.length === 0 && pastEvents.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-20">
-          {/* <img
-            src="../src/assets/no-events.svg"
-            alt="No events"
-            className="w-40 h-40 mb-4 opacity-60"
-          /> */}
-          <h3
-            className={`text-xl font-medium mb-2 ${
-              darkMode ? "text-gray-300" : "text-gray-700"
+          <p
+            className={`mt-4 text-lg font-medium ${
+              darkMode ? "text-gray-300" : "text-gray-200"
             }`}
           >
-            No events available
-          </h3>
-          <p className={darkMode ? "text-gray-400" : "text-gray-500"}>
-            Check back later for upcoming events
+            Loading amazing events...
           </p>
         </div>
-      )}
-
-      {/* BOOKMARKED EVENTS SECTION */}
-      {!loading && filteredBookmarks.length > 0 && !showOnlyBookmarked && (
-        <div className="mb-12">
-          <div className="px-4 sm:px-6 mb-6">
-            <div className="flex items-center gap-3">
-              <BsBookmarkFill
-                className={
-                  darkMode
-                    ? "text-yellow-400 text-xl"
-                    : "text-yellow-500 text-xl"
-                }
+      ) : (
+        <>
+          {/* Hero section with improved styling - Only show when not loading */}
+          <div className="w-full px-4 sm:px-6 mb-8">
+            <div className="relative w-full h-60 sm:h-80 md:h-96 overflow-hidden rounded-xl shadow-lg">
+              <img
+                src="../src/assets/pexels-pixabay-433452.jpg"
+                alt="Event Hero"
+                className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
               />
-              <h2
-                className={`text-2xl font-bold uppercase ${
-                  darkMode ? "text-gray-200" : "text-gray-700"
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end pb-8 px-6">
+                {/* Date display */}
+                <div className="absolute top-4 right-6">
+                  <div className=" backdrop-blur-md px-5 py-3 rounded-lg shadow-lg border-l-4 border-blue-500 transform transition-transform duration-300 hover:scale-105">
+                    <p className="text-gray-800 font-semibold">
+                      {new Date().toLocaleDateString("en-US", {
+                        weekday: "long",
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </p>
+                  </div>
+                </div>
+
+                <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+                  Discover Amazing Events
+                </h1>
+                <p className="text-white text-lg opacity-90 mb-4">
+                  Find and book tickets for the best events near you
+                </p>
+
+                {/* Filter Toggle Button */}
+                {bookmarkedEvents.length > 0 && (
+                  <div className="flex">
+                    <button
+                      onClick={() => {
+                        const newState = !showOnlyBookmarked;
+                        setShowOnlyBookmarked(newState);
+                        // Store this preference in localStorage
+                        localStorage.setItem("showOnlyBookmarked", newState);
+                      }}
+                      className={`flex items-center gap-2 py-2 px-4 rounded-lg transition-colors ${
+                        showOnlyBookmarked
+                          ? "bg-yellow-500 text-white"
+                          : "bg-white/80 text-gray-800 hover:bg-white"
+                      }`}
+                    >
+                      {showOnlyBookmarked ? (
+                        <BsBookmarkFill className="w-4 h-4" />
+                      ) : (
+                        <BsBookmark className="w-4 h-4" />
+                      )}
+                      <span className="font-medium">
+                        {showOnlyBookmarked
+                          ? "Showing Bookmarked Events"
+                          : `Show Only Bookmarked Events${
+                              filteredBookmarks.length > 0
+                                ? ` (${filteredBookmarks.length})`
+                                : ""
+                            }`}
+                      </span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Content when loading is complete */}
+          {liveEvents.length === 0 && pastEvents.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-20">
+              <h3
+                className={`text-xl font-medium mb-2 ${
+                  darkMode ? "text-gray-300" : "text-gray-700"
                 }`}
               >
-                Your Bookmarked Events
-              </h2>
+                No events available
+              </h3>
+              <p className={darkMode ? "text-gray-400" : "text-gray-500"}>
+                Check back later for upcoming events
+              </p>
             </div>
-            <div className="h-1 w-24 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full mt-2"></div>
-          </div>
+          )}
 
-          <div className="px-4 sm:px-6 pb-6 grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {filteredBookmarks.map((event) => (
-              <EventCard event={event} isPast={false} key={event._id} />
-            ))}
-          </div>
-        </div>
-      )}
+          {/* BOOKMARKED EVENTS SECTION */}
+          {filteredBookmarks.length > 0 && !showOnlyBookmarked && (
+            <div className="mb-12">
+              <div className="px-4 sm:px-6 mb-6">
+                <div className="flex items-center gap-3">
+                  <BsBookmarkFill
+                    className={
+                      darkMode
+                        ? "text-yellow-400 text-xl"
+                        : "text-yellow-500 text-xl"
+                    }
+                  />
+                  <h2
+                    className={`text-2xl font-bold uppercase ${
+                      darkMode ? "text-gray-200" : "text-gray-700"
+                    }`}
+                  >
+                    Your Bookmarked Events
+                  </h2>
+                </div>
+                <div className="h-1 w-24 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full mt-2"></div>
+              </div>
 
-      {/* LIVE EVENTS SECTION */}
-      {liveEvents.length > 0 && !showOnlyBookmarked && (
-        <div className="mb-12">
-          <div className="px-4 sm:px-6 mb-6">
-            <div className="flex items-center gap-3">
-              <BsCalendarCheck
-                className={
-                  darkMode ? "text-green-400 text-xl" : "text-green-600 text-xl"
-                }
-              />
-              <h2
-                className={`text-2xl font-bold uppercase ${
-                  darkMode ? "text-gray-200" : "text-gray-800"
+              <div className="px-4 sm:px-6 pb-6 grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                {filteredBookmarks.map((event) => (
+                  <EventCard event={event} isPast={false} key={event._id} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* LIVE EVENTS SECTION */}
+          {liveEvents.length > 0 && !showOnlyBookmarked && (
+            <div className="mb-12">
+              <div className="px-4 sm:px-6 mb-6">
+                <div className="flex items-center gap-3">
+                  <BsCalendarCheck
+                    className={
+                      darkMode
+                        ? "text-green-400 text-xl"
+                        : "text-green-600 text-xl"
+                    }
+                  />
+                  <h2
+                    className={`text-2xl font-bold uppercase ${
+                      darkMode ? "text-gray-200" : "text-gray-800"
+                    }`}
+                  >
+                    Live & Upcoming Events
+                  </h2>
+                </div>
+                <div className="h-1 w-24 bg-gradient-to-r from-green-500 to-blue-500 rounded-full mt-2"></div>
+              </div>
+
+              <div className="px-4 sm:px-6 pb-6 grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                {liveEvents.map((event) => (
+                  <EventCard event={event} isPast={false} key={event._id} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* PAST EVENTS SECTION */}
+          {pastEvents.length > 0 && !showOnlyBookmarked && (
+            <div className="mb-12">
+              <div className="px-4 sm:px-6 mb-6">
+                <div className="flex items-center gap-3">
+                  <BsCalendarX
+                    className={
+                      darkMode ? "text-red-400 text-xl" : "text-red-500 text-xl"
+                    }
+                  />
+                  <h2
+                    className={`text-2xl font-bold uppercase ${
+                      darkMode ? "text-gray-200" : "text-gray-700"
+                    }`}
+                  >
+                    Past Events
+                  </h2>
+                </div>
+                <div className="h-1 w-24 bg-gradient-to-r from-red-500 to-purple-500 rounded-full mt-2"></div>
+              </div>
+
+              <div className="px-4 sm:px-6 pb-6 grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                {pastEvents.map((event) => (
+                  <EventCard event={event} isPast={true} key={event._id} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ALL BOOKMARKED EVENTS (when filter is active) */}
+          {showOnlyBookmarked && filteredBookmarks.length > 0 && (
+            <div className="mb-12">
+              <div className="px-4 sm:px-6 mb-6">
+                <div className="flex items-center gap-3">
+                  <BsBookmarkFill
+                    className={
+                      darkMode
+                        ? "text-yellow-400 text-xl"
+                        : "text-yellow-500 text-xl"
+                    }
+                  />
+                  <h2
+                    className={`text-2xl font-bold uppercase ${
+                      darkMode ? "text-gray-200" : "text-gray-700"
+                    }`}
+                  >
+                    Your Bookmarked Events
+                  </h2>
+                </div>
+                <div className="h-1 w-24 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full mt-2"></div>
+              </div>
+
+              <div className="px-4 sm:px-6 pb-6 grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                {filteredBookmarks.map((event) => (
+                  <EventCard event={event} isPast={false} key={event._id} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Show message when filter is active but no bookmarks */}
+          {showOnlyBookmarked && filteredBookmarks.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-20">
+              <BsBookmark className="w-16 h-16 mb-4 opacity-50 text-gray-400" />
+              <h3
+                className={`text-xl font-medium mb-2 ${
+                  darkMode ? "text-gray-300" : "text-gray-700"
                 }`}
               >
-                Live & Upcoming Events
-              </h2>
-            </div>
-            <div className="h-1 w-24 bg-gradient-to-r from-green-500 to-blue-500 rounded-full mt-2"></div>
-          </div>
-
-          <div className="px-4 sm:px-6 pb-6 grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {liveEvents.map((event) => (
-              <EventCard event={event} isPast={false} key={event._id} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* PAST EVENTS SECTION */}
-      {pastEvents.length > 0 && !showOnlyBookmarked && (
-        <div className="mb-12">
-          <div className="px-4 sm:px-6 mb-6">
-            <div className="flex items-center gap-3">
-              <BsCalendarX
-                className={
-                  darkMode ? "text-red-400 text-xl" : "text-red-500 text-xl"
-                }
-              />
-              <h2
-                className={`text-2xl font-bold uppercase ${
-                  darkMode ? "text-gray-200" : "text-gray-700"
-                }`}
+                {bookmarkedEvents.length > 0
+                  ? "No upcoming bookmarked events"
+                  : "No bookmarked events"}
+              </h3>
+              <p className={darkMode ? "text-gray-400" : "text-gray-500"}>
+                {bookmarkedEvents.length > 0
+                  ? "Your bookmarked events have passed"
+                  : "Save events you're interested in to find them here"}
+              </p>
+              <button
+                onClick={() => {
+                  setShowOnlyBookmarked(false);
+                  localStorage.setItem("showOnlyBookmarked", false);
+                }}
+                className="mt-4 py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
               >
-                Past Events
-              </h2>
+                Show All Events
+              </button>
             </div>
-            <div className="h-1 w-24 bg-gradient-to-r from-red-500 to-purple-500 rounded-full mt-2"></div>
-          </div>
-
-          <div className="px-4 sm:px-6 pb-6 grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {pastEvents.map((event) => (
-              <EventCard event={event} isPast={true} key={event._id} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ALL BOOKMARKED EVENTS (when filter is active) */}
-      {showOnlyBookmarked && filteredBookmarks.length > 0 && (
-        <div className="mb-12">
-          <div className="px-4 sm:px-6 mb-6">
-            <div className="flex items-center gap-3">
-              <BsBookmarkFill
-                className={
-                  darkMode
-                    ? "text-yellow-400 text-xl"
-                    : "text-yellow-500 text-xl"
-                }
-              />
-              <h2
-                className={`text-2xl font-bold uppercase ${
-                  darkMode ? "text-gray-200" : "text-gray-700"
-                }`}
-              >
-                Your Bookmarked Events
-              </h2>
-            </div>
-            <div className="h-1 w-24 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full mt-2"></div>
-          </div>
-
-          <div className="px-4 sm:px-6 pb-6 grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {filteredBookmarks.map((event) => (
-              <EventCard event={event} isPast={false} key={event._id} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Show message when filter is active but no bookmarks */}
-      {showOnlyBookmarked && filteredBookmarks.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-20">
-          <BsBookmark className="w-16 h-16 mb-4 opacity-50 text-gray-400" />
-          <h3
-            className={`text-xl font-medium mb-2 ${
-              darkMode ? "text-gray-300" : "text-gray-700"
-            }`}
-          >
-            {bookmarkedEvents.length > 0
-              ? "No upcoming bookmarked events"
-              : "No bookmarked events"}
-          </h3>
-          <p className={darkMode ? "text-gray-400" : "text-gray-500"}>
-            {bookmarkedEvents.length > 0
-              ? "Your bookmarked events have passed"
-              : "Save events you're interested in to find them here"}
-          </p>
-          <button
-            onClick={() => {
-              setShowOnlyBookmarked(false);
-              localStorage.setItem("showOnlyBookmarked", false);
-            }}
-            className="mt-4 py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-          >
-            Show All Events
-          </button>
-        </div>
+          )}
+        </>
       )}
     </div>
   );

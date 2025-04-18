@@ -30,6 +30,7 @@ export default function CalendarView() {
   const [isLoading, setIsLoading] = useState(true);
   const [animation, setAnimation] = useState("slide-right");
   const [viewMode, setViewMode] = useState("month"); // 'month' or 'agenda'
+  const [initialLoading, setInitialLoading] = useState(true);
 
   // Helper function to create a full date with time
   const createEventDateTime = (eventDate, eventTime) => {
@@ -80,6 +81,15 @@ export default function CalendarView() {
       });
   }, []);
 
+  // Initial loading effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setInitialLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   const firstDayOfMonth = startOfMonth(currentMonth);
   const lastDayOfMonth = endOfMonth(currentMonth);
   const daysInMonth = eachDayOfInterval({
@@ -116,6 +126,19 @@ export default function CalendarView() {
   const toggleViewMode = () => {
     setViewMode(viewMode === "month" ? "agenda" : "month");
   };
+
+  if (initialLoading) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center">
+        <div className="flex flex-col items-center justify-center h-screen">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-700 dark:border-blue-400"></div>
+          <p className="text-xl font-semibold mt-4 dark:text-gray-200">
+            Loading Your Calendar...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center py-6 px-4 sm:px-6 md:px-8 lg:px-10">
