@@ -1118,6 +1118,20 @@ export default function IndexPage() {
             className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end pb-8 px-6">
+            {/* Date display */}
+            <div className="absolute top-4 right-6">
+              <div className=" backdrop-blur-md px-5 py-3 rounded-lg shadow-lg border-l-4 border-blue-500 transform transition-transform duration-300 hover:scale-105">
+                <p className="text-gray-800 font-semibold">
+                  {new Date().toLocaleDateString("en-US", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </p>
+              </div>
+            </div>
+
             <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
               Discover Amazing Events
             </h1>

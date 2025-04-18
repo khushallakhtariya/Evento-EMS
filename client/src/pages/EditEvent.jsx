@@ -274,9 +274,10 @@ export default function EditEvent() {
           theme: darkMode ? "dark" : "light",
         });
 
-        // Redirect back to event page after successful update
+        // Redirect to home page after successful update
         setTimeout(() => {
-          navigate(`/event/${id}`);
+          navigate("/");
+          window.scrollTo(0, 0);
         }, 2000);
       })
       .catch((error) => {
@@ -654,7 +655,10 @@ export default function EditEvent() {
             <div className="flex justify-between pt-6">
               <button
                 type="button"
-                onClick={() => navigate(`/event/${id}`)}
+                onClick={() => {
+                  navigate("/");
+                  window.scrollTo(0, 0);
+                }}
                 className="px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800 transition-colors"
               >
                 Cancel
